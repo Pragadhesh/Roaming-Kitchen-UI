@@ -1,8 +1,25 @@
-import { IconButton } from "@mui/material";
 import "./App.css";
 import LockIcon from "@mui/icons-material/Lock";
+import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { updateAuthenticationStatus } from "./redux/slices/loginSlice";
 
 function App() {
+  const dispatch = useDispatch();
+  const [isAuthenticationFailed, setIsAuthenticationFailed] = useState(
+    useSelector((state: any) => state.isAuthenticationFailed)
+  );
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const errorParam = params.get("error");
+
+    if (errorParam) {
+      dispatch(updateAuthenticationStatus(true));
+      setIsAuthenticationFailed(true);
+    }
+  }, [dispatch]);
+
   return (
     <div className="flex flex-col w-full h-full bg-neutral-200 absolute overflow-hidden">
       <div className="curve bg-limegreen"></div>
@@ -48,6 +65,11 @@ function App() {
           </button>
         </div>
       </div>
+      {isAuthenticationFailed && (
+        <div className="flex text-sm absolute bottom-5 left-1/4 h-10 w-80 items-center bg-darkgreen justify-center text-white font-poppins font-bold">
+          Login Failed. Please try again
+        </div>
+      )}
     </div>
   );
 }

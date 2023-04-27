@@ -5,7 +5,8 @@ module.exports = {
     extend: {
       colors: {
         'limegreen': '#94C973',
-        'darkgreen': '#5CAC0E'
+        'darkgreen': '#5CAC0E',
+        'menu': 'FDFDFD'
       },
       fontFamily: {
         poppins: ["Poppins"],

@@ -1,6 +1,8 @@
 import "./Inventory.css";
 import CircularProgress from "@mui/material/CircularProgress";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import { BACKEND_URL } from "../../constants/backendurl";
 import SearchIcon from "@mui/icons-material/Search";
 import {
   Box,
@@ -13,7 +15,10 @@ import {
   Select,
   SelectChangeEvent,
   TextField,
+  ToggleButton,
+  ToggleButtonGroup,
 } from "@mui/material";
+import { MenuItems } from "../../interface/menuitem";
 
 const additemmodalstyle = {
   position: "absolute" as "absolute",
@@ -29,23 +34,169 @@ const additemmodalstyle = {
   p: 4,
 };
 
+const updateitemmodalstyle = {
+  position: "absolute" as "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  width: 850,
+  height: 500,
+  bgcolor: "background.paper",
+  border: "2px solid #5CAC0E",
+  boxShadow: 24,
+  borderRadius: 2,
+  p: 4,
+};
+
 const Inventory = () => {
+  const [menuItems, setMenuItems] = useState<MenuItems[]>([]);
+
   const [isLoading, setIsLoading] = useState(false);
 
-  const [addItemModal, setAddItemModal] = useState(true);
+  const [searchString, setSearchString] = useState("");
+
+  const [addItemModal, setAddItemModal] = useState(false);
   const [addItemIsLoading, setAddItemIsLoading] = useState(false);
   const [addItemResponse, setAddItemResponse] = useState(false);
-  const handleaddItemOpen = () => setAddItemModal(true);
+  const [itemName, setItemName] = useState("");
+  const [itemAmount, setItemAmount] = useState("");
+  const handleaddItemOpen = () => {
+    setAddItemUnit("PIECE");
+    setItemAmount("30");
+    setAddItemModal(true);
+  };
   const handleaddItemClose = () => {
+    setItemName("");
     setAddItemIsLoading(false);
     setAddItemResponse(false);
     setAddItemModal(false);
   };
 
-  const [addItemUnit, setAddItemUnit] = React.useState("");
+  const [updateItemModal, setUpdateItemModal] = useState(false);
+  const [updateItemIsLoading, setUpdateItemIsLoading] = useState(false);
+  const [updateItemResponse, setUpdateItemResponse] = useState(false);
+  const [upResponse, setUpResponse] = useState("");
+  const [upid, setupid] = useState(0);
+  const [upitemName, setupItemName] = useState("");
+  const [upitemunit, setupitemunit] = useState("");
+  const [upitemAmount, setupItemAmount] = useState("");
+  const [upimageurl, setupimageurl] = useState("");
+  const handleupdateItemOpen = (
+    id: any,
+    name: any,
+    unit: any,
+    amount: any,
+    imageurl: any
+  ) => {
+    setupid(id);
+    setupItemName(name);
+    setupitemunit(unit);
+    setupItemAmount(amount);
+    setupimageurl(imageurl);
+    setUpdateItemModal(true);
+  };
+  const handleupdateItemClose = () => {
+    setUpdateItemIsLoading(false);
+    setUpdateItemResponse(false);
+    setUpdateItemModal(false);
+    setUpResponse("");
+  };
 
+  const [category, setCategory] = React.useState("item");
+  const handleCategoryChange = (
+    event: React.MouseEvent<HTMLElement>,
+    newCategory: string
+  ) => {
+    console.log(category);
+    setCategory(newCategory);
+  };
+
+  const [addItemUnit, setAddItemUnit] = React.useState("PIECE");
   const handleAddItemUnitChange = (event: SelectChangeEvent) => {
     setAddItemUnit(event.target.value as string);
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setIsLoading(true);
+      try {
+        const response = await axios.get(`${BACKEND_URL}menuitem`);
+        setMenuItems(response.data);
+        setIsLoading(false);
+      } catch (err) {
+        console.log(err);
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const addItemToInventory = async () => {
+    setAddItemIsLoading(true);
+    try {
+      const response = await axios.post(`${BACKEND_URL}menuitem`, {
+        itemName: itemName,
+        unit: addItemUnit,
+        amount: itemAmount.toString(),
+      });
+      if (response.status === 200) {
+        setMenuItems(response.data);
+        setAddItemIsLoading(false);
+        setAddItemResponse(true);
+      }
+    } catch (error: any) {
+      console.log(error);
+      setAddItemIsLoading(false);
+    }
+  };
+
+  const updateItemToInventory = async () => {
+    setUpdateItemIsLoading(true);
+    try {
+      const response = await axios.put(`${BACKEND_URL}menuitem`, {
+        id: upid,
+        itemName: upitemName,
+        unit: upitemunit,
+        amount: upitemAmount.toString(),
+      });
+      if (response.status === 200) {
+        setMenuItems(response.data);
+        setUpResponse("Item Updated successfully");
+        setUpdateItemIsLoading(false);
+        setUpdateItemResponse(true);
+      }
+    } catch (error: any) {
+      console.log(error);
+      setUpResponse("Error in updating item. Please try again");
+      setUpdateItemIsLoading(false);
+      setUpdateItemResponse(true);
+    }
+  };
+
+  const deleteItemFromInventory = async () => {
+    setUpdateItemIsLoading(true);
+    try {
+      const response = await axios.delete(`${BACKEND_URL}menuitem`, {
+        data: {
+          id: upid,
+          itemName: upitemName,
+          unit: upitemunit,
+          amount: upitemAmount.toString(),
+        },
+      });
+      if (response.status === 200) {
+        setMenuItems(response.data);
+        setUpResponse("Item Removed successfully");
+        setUpdateItemIsLoading(false);
+        setUpdateItemResponse(true);
+      }
+    } catch (error: any) {
+      console.log(error);
+      setUpResponse("Error in updating item. Please try again");
+      setUpdateItemIsLoading(false);
+      setUpdateItemResponse(true);
+    }
   };
 
   return (
@@ -57,6 +208,178 @@ const Inventory = () => {
       )}
       {!isLoading && (
         <div className="flex flex-col w-full h-full">
+          <Modal open={updateItemModal} onClose={handleupdateItemClose}>
+            <Box sx={updateitemmodalstyle}>
+              {!updateItemIsLoading && !updateItemResponse && (
+                <div className="flex flex-col w-full h-full">
+                  <div className="flex w-full  justify-center">
+                    <ToggleButtonGroup
+                      color="primary"
+                      value={category}
+                      exclusive
+                      onChange={handleCategoryChange}
+                      aria-label="Platform"
+                    >
+                      <ToggleButton
+                        value="item"
+                        style={
+                          category === "item"
+                            ? { backgroundColor: "#5CAC0E", color: "white" }
+                            : {}
+                        }
+                      >
+                        ITEM
+                      </ToggleButton>
+                      <ToggleButton
+                        value="recipes"
+                        style={
+                          category === "recipes"
+                            ? { backgroundColor: "#5CAC0E", color: "white" }
+                            : {}
+                        }
+                      >
+                        RECIPES
+                      </ToggleButton>
+                    </ToggleButtonGroup>
+                  </div>
+                  {category === "item" && (
+                    <div className="flex flex-col w-full h-full">
+                      <div className="grid grid-cols-2 w-full h-full pt-5 justify-center">
+                        <div
+                          className="flex w-full h-full updatemenuitem rounded"
+                          style={{
+                            backgroundImage: `url(${upimageurl})`,
+                          }}
+                        ></div>
+                        <div className="grid grid-rows-3 w-full p-5">
+                          <div className="flex flex-col w-full h-full">
+                            <div className="flex text-lg font-poppins font-normal">
+                              Item Name
+                            </div>
+                            <div className="flex  pt-3 text-darkgreen text-2xl font-poppins font-semibold">
+                              {upitemName}
+                            </div>
+                          </div>
+                          <div className="flex flex-col w-full h-full">
+                            <div className="flex text-lg font-poppins font-normal">
+                              Unit
+                            </div>
+                            <div className="flex  pt-3 text-darkgreen text-2xl font-poppins font-semibold">
+                              {upitemunit}
+                            </div>
+                          </div>
+                          <div>
+                            <div className="flex text-lg font-poppins font-normal">
+                              Amount
+                            </div>
+                            <TextField
+                              id="outlined-basic"
+                              variant="outlined"
+                              type="number"
+                              value={upitemAmount}
+                              className="flex pt-3"
+                              color="secondary"
+                              onChange={(event) =>
+                                setupItemAmount(event.target.value)
+                              }
+                            />
+                          </div>
+                        </div>
+                      </div>
+                      <div className="grid pt-5 grid-flow-col gap-2 w-full justify-end">
+                        <button
+                          className="w-32 h-12 bg-red-600 text-white font-poppins font-bold text-sm rounded"
+                          onClick={deleteItemFromInventory}
+                        >
+                          Delete Item
+                        </button>
+                        <button
+                          className="w-32 h-12 bg-darkgreen text-white font-poppins font-bold text-sm rounded"
+                          onClick={updateItemToInventory}
+                        >
+                          Update Item
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                  {category === "recipes" && (
+                    <div className="grid pt-5 grid-cols-3 gap-5 grid-flow-row overflow-auto">
+                      <Card className="grid grid-rows-6 w-48 h-60 border-2 border-darkgreen">
+                        <div
+                          className="flex row-span-5 w-full h-full menuitem"
+                          /*style={{
+                  backgroundImage: `url(${upbgimage})`,
+                }}*/
+                        ></div>
+                        <div className="flex row-span-1 w-full h-full justify-center font-poppins font-semibold items-center">
+                          Mutton
+                        </div>
+                      </Card>
+                      <Card className="grid grid-rows-6 w-48 h-60 border-2 border-darkgreen">
+                        <div
+                          className="flex row-span-5 w-full h-full menuitem"
+                          /*style={{
+                  backgroundImage: `url(${upbgimage})`,
+                }}*/
+                        ></div>
+                        <div className="flex row-span-1 w-full h-full justify-center font-poppins font-semibold items-center">
+                          Mutton
+                        </div>
+                      </Card>
+                      <Card className="grid grid-rows-6 w-48 h-60 border-2 border-darkgreen">
+                        <div
+                          className="flex row-span-5 w-full h-full menuitem"
+                          /*style={{
+                  backgroundImage: `url(${upbgimage})`,
+                }}*/
+                        ></div>
+                        <div className="flex row-span-1 w-full h-full justify-center font-poppins font-semibold items-center">
+                          Mutton
+                        </div>
+                      </Card>
+                      <Card className="grid grid-rows-6 w-48 h-60 border-2 border-darkgreen">
+                        <div
+                          className="flex row-span-5 w-full h-full menuitem"
+                          /*style={{
+                  backgroundImage: `url(${upbgimage})`,
+                }}*/
+                        ></div>
+                        <div className="flex row-span-1 w-full h-full justify-center font-poppins font-semibold items-center">
+                          Mutton
+                        </div>
+                      </Card>
+                      <Card className="grid grid-rows-6 w-48 h-60 border-2 border-darkgreen">
+                        <div
+                          className="flex row-span-5 w-full h-full menuitem"
+                          /*style={{
+                  backgroundImage: `url(${upbgimage})`,
+                }}*/
+                        ></div>
+                        <div className="flex row-span-1 w-full h-full justify-center font-poppins font-semibold items-center">
+                          Mutton
+                        </div>
+                      </Card>
+                    </div>
+                  )}
+                </div>
+              )}
+              {updateItemIsLoading && (
+                <div className="flex flex-col w-full h-full justify-center items-center">
+                  <div className="flex pb-5 text-xl font-poppins">
+                    Please wait while updating the inventory
+                  </div>
+                  <CircularProgress sx={{ color: "#5CAC0E" }} />
+                </div>
+              )}
+              {updateItemResponse && (
+                <div className="flex flex-col w-full h-full justify-center items-center">
+                  <div className="flex pb-5 text-xl font-poppins">
+                    {upResponse}
+                  </div>
+                </div>
+              )}
+            </Box>
+          </Modal>
           <Modal open={addItemModal} onClose={handleaddItemClose}>
             <Box sx={additemmodalstyle}>
               <div className="flex flex-col w-full h-full">
@@ -90,6 +413,9 @@ const Inventory = () => {
                           label="Name"
                           variant="outlined"
                           className="flex pl-5"
+                          value={itemName}
+                          onChange={(event) => setItemName(event.target.value)}
+                          color="secondary"
                         />
                       </div>
                       <div className="grid w-full h-full grid-cols-2">
@@ -106,6 +432,8 @@ const Inventory = () => {
                             value={addItemUnit}
                             label="Unit"
                             onChange={handleAddItemUnitChange}
+                            defaultValue="PIECE"
+                            color="secondary"
                           >
                             <MenuItem value={"PIECE"}>PIECE</MenuItem>
                             <MenuItem value={"GRAM"}>GRAM</MenuItem>
@@ -124,12 +452,20 @@ const Inventory = () => {
                           label="Amount"
                           variant="outlined"
                           type="number"
+                          value={itemAmount}
+                          onChange={(event) =>
+                            setItemAmount(event.target.value)
+                          }
                           className="flex pl-5"
+                          color="secondary"
                         />
                       </div>
                     </div>
                     <div className="flex w-full justify-end pt-7">
-                      <button className="w-48 h-12 bg-darkgreen text-white font-poppins font-bold text-sm rounded">
+                      <button
+                        className="w-48 h-12 bg-darkgreen text-white font-poppins font-bold text-sm rounded"
+                        onClick={addItemToInventory}
+                      >
                         Add Item to Inventory
                       </button>
                     </div>
@@ -145,6 +481,8 @@ const Inventory = () => {
               <InputBase
                 sx={{ ml: 1, flex: 1 }}
                 placeholder="Search Inventory"
+                value={searchString}
+                onChange={(e) => setSearchString(e.target.value)}
               />
             </div>
             <button
@@ -158,61 +496,37 @@ const Inventory = () => {
             Inventory List
           </div>
           <div className="grid p-10 grid-flow-row grid-cols-4 gap-x-5 gap-y-8">
-            <Card className="grid grid-rows-6 w-48 h-60 border-2 border-red-500 ">
-              <div
-                className="flex row-span-5 w-full h-full menuitem"
-                /*style={{
-                  backgroundImage: `url(${upbgimage})`,
-                }}*/
-              ></div>
-              <div className="flex row-span-1 w-full h-full justify-center font-poppins font-semibold items-center">
-                Mutton
-              </div>
-            </Card>
-            <Card className="grid grid-rows-6 w-48 h-60 border-2 border-red-500 ">
-              <div
-                className="flex row-span-5 w-full h-full menuitem"
-                /*style={{
-                  backgroundImage: `url(${upbgimage})`,
-                }}*/
-              ></div>
-              <div className="flex row-span-1 w-full h-full justify-center font-poppins font-semibold items-center">
-                Mutton
-              </div>
-            </Card>
-            <Card className="grid grid-rows-6 w-48 h-60 border-2 border-red-500 ">
-              <div
-                className="flex row-span-5 w-full h-full menuitem"
-                /*style={{
-                  backgroundImage: `url(${upbgimage})`,
-                }}*/
-              ></div>
-              <div className="flex row-span-1 w-full h-full justify-center font-poppins font-semibold items-center">
-                Mutton
-              </div>
-            </Card>
-            <Card className="grid grid-rows-6 w-48 h-60 border-2 border-red-500 ">
-              <div
-                className="flex row-span-5 w-full h-full menuitem"
-                /*style={{
-                  backgroundImage: `url(${upbgimage})`,
-                }}*/
-              ></div>
-              <div className="flex row-span-1 w-full h-full justify-center font-poppins font-semibold items-center">
-                Mutton
-              </div>
-            </Card>
-            <Card className="grid grid-rows-6 w-48 h-60 border-2 border-red-500 ">
-              <div
-                className="flex row-span-5 w-full h-full menuitem"
-                /*style={{
-                  backgroundImage: `url(${upbgimage})`,
-                }}*/
-              ></div>
-              <div className="flex row-span-1 w-full h-full justify-center font-poppins font-semibold items-center">
-                Mutton
-              </div>
-            </Card>
+            {menuItems
+              .filter((item) =>
+                item.itemName.toLowerCase().includes(searchString.toLowerCase())
+              )
+              .map((item) => (
+                <Card
+                  key={item.id}
+                  className={`grid grid-rows-6 w-48 h-60 border-2 ${
+                    item.low ? "border-red-500" : "border-darkgreen"
+                  }`}
+                  onClick={() =>
+                    handleupdateItemOpen(
+                      item.id,
+                      item.itemName,
+                      item.unit,
+                      item.amount,
+                      item.imageUrl
+                    )
+                  }
+                >
+                  <div
+                    className="flex row-span-5 w-full h-full menuitem"
+                    style={{
+                      backgroundImage: `url(${item.imageUrl})`,
+                    }}
+                  ></div>
+                  <div className="flex row-span-1 w-full h-full justify-center font-poppins font-semibold items-center">
+                    {item.itemName}
+                  </div>
+                </Card>
+              ))}
           </div>
         </div>
       )}

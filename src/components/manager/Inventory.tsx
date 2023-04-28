@@ -202,7 +202,7 @@ const Inventory = () => {
   return (
     <>
       {isLoading && (
-        <div className="flex w-full h-full justify-center items-center">
+        <div className="flex w-full h-full pt-64 justify-center items-center">
           <CircularProgress sx={{ color: "#5CAC0E" }} />
         </div>
       )}
@@ -386,9 +386,9 @@ const Inventory = () => {
                 {addItemIsLoading && !addItemResponse && (
                   <div className="flex w-full h-full">
                     <div className="flex flex-col w-full h-full justify-center items-center">
-                      <div className="flex pb-5">
-                        Please wait while the item is being added to the
-                        inventory
+                      <div className="flex justify-center pl-10 pr-10 pb-5  font-poppins">
+                        Please wait while we add the item to inventory and
+                        generate an image, this might take a few moments.
                       </div>
                       <CircularProgress sx={{ color: "#5CAC0E" }} />
                     </div>

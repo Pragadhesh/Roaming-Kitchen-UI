@@ -3,6 +3,7 @@ import InventoryOutlinedIcon from "@mui/icons-material/InventoryOutlined";
 import RestaurantMenuOutlinedIcon from "@mui/icons-material/RestaurantMenuOutlined";
 import MenuBookOutlinedIcon from "@mui/icons-material/MenuBookOutlined";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
+import ShoppingBagIcon from "@mui/icons-material/ShoppingBag";
 import { useDispatch, useSelector } from "react-redux";
 import managerSlice, {
   updateActiveCategory,
@@ -10,6 +11,7 @@ import managerSlice, {
 import Inventory from "./Inventory";
 import Menu from "./Menu";
 import Location from "./Location";
+import Directions from "./Directions";
 
 const Manager = () => {
   const dispatch = useDispatch();
@@ -66,7 +68,20 @@ const Manager = () => {
             >
               <RestaurantMenuOutlinedIcon></RestaurantMenuOutlinedIcon>
               <div className="flex pl-3 text-xs font-poppins font-semibold text-black items-center">
-                PRODUCTS
+                AVAILABLE MENU
+              </div>
+            </button>
+            <button
+              className={`flex rounded h-11 items-center pl-3  ${
+                category === "orders" ? "border-2 border-darkgreen" : ""
+              }`}
+            >
+              <ShoppingBagIcon></ShoppingBagIcon>
+              <div
+                className="flex pl-3 text-xs font-poppins font-semibold text-black items-center"
+                onClick={() => handleCategoryChange("orders")}
+              >
+                ORDERS
               </div>
             </button>
             <button
@@ -87,6 +102,7 @@ const Manager = () => {
         {category === "inventory" && <Inventory></Inventory>}
         {category === "menu" && <Menu></Menu>}
         {category === "location" && <Location></Location>}
+        {category === "orders" && <Directions></Directions>}
       </div>
     </div>
   );

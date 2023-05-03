@@ -65,9 +65,6 @@ const Location = () => {
   }, []);
 
   const handleLocationChange = async (latitude: any, longitude: any) => {
-    console.log("Entered updating location");
-    console.log("latitude:" + latitude);
-    console.log("longitude:" + longitude);
     setLocdata({ id: 0, latitude: latitude, longitude: longitude });
     dispatch(
       updateLocation({

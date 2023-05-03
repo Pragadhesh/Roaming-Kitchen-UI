@@ -128,7 +128,6 @@ const Inventory = () => {
         setIsLoading(false);
       }
     };
-
     fetchData();
   }, []);
 
@@ -438,7 +437,7 @@ const Inventory = () => {
                             <MenuItem value={"PIECE"}>PIECE</MenuItem>
                             <MenuItem value={"GRAM"}>GRAM</MenuItem>
                             <MenuItem value={"TEASPOON"}>TEASPOON</MenuItem>
-                            <MenuItem value={"TABLESPPON"}>TABLESPPON</MenuItem>
+                            <MenuItem value={"TABLESPOON"}>TABLESPPON</MenuItem>
                             <MenuItem value={"CUP"}>CUP</MenuItem>
                           </Select>
                         </FormControl>

@@ -54,18 +54,22 @@ function Homepage() {
         <div className="flex text-5xl pl-6 font-medium font-poppins text-darkgreen">
           Delicious
         </div>
+
         <div className="flex pt-5 text-4xl pl-6 font-medium font-poppins text-black">
           Quench the Hunger
         </div>
+
         <div className="flex pt-5  pl-6 text-sm  font-poppins  font-normal">
           Taste the difference with our freshly-made dishes that are sure to
           please your palate. Don't wait, order now and experience a feast for
           your senses!
         </div>
         <div className="flex pt-5 pl-8">
-          <button className="w-36 h-12 bg-darkgreen text-white font-poppins font-bold text-sm rounded-3xl">
-            Quench Now
-          </button>
+          <Link to="/customer">
+            <button className="w-36 h-12 bg-darkgreen text-white font-poppins font-bold text-sm rounded-3xl">
+              Quench Now
+            </button>
+          </Link>
         </div>
       </div>
       {isAuthenticationFailed && (

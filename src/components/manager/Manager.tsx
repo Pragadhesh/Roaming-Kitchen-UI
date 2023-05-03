@@ -2,11 +2,14 @@ import React, { useEffect, useState } from "react";
 import InventoryOutlinedIcon from "@mui/icons-material/InventoryOutlined";
 import RestaurantMenuOutlinedIcon from "@mui/icons-material/RestaurantMenuOutlined";
 import MenuBookOutlinedIcon from "@mui/icons-material/MenuBookOutlined";
+import LocationOnIcon from "@mui/icons-material/LocationOn";
 import { useDispatch, useSelector } from "react-redux";
 import managerSlice, {
   updateActiveCategory,
 } from "../../redux/slices/managerSlice";
 import Inventory from "./Inventory";
+import Menu from "./Menu";
+import Location from "./Location";
 
 const Manager = () => {
   const dispatch = useDispatch();
@@ -52,7 +55,7 @@ const Manager = () => {
             >
               <MenuBookOutlinedIcon></MenuBookOutlinedIcon>
               <div className="flex pl-3 text-xs font-poppins font-semibold text-black items-center">
-                MENU
+                RECIPES
               </div>
             </button>
             <button
@@ -66,11 +69,24 @@ const Manager = () => {
                 PRODUCTS
               </div>
             </button>
+            <button
+              className={`flex rounded h-11 items-center pl-3  ${
+                category === "location" ? "border-2 border-darkgreen" : ""
+              }`}
+              onClick={() => handleCategoryChange("location")}
+            >
+              <LocationOnIcon></LocationOnIcon>
+              <div className="flex pl-3 text-xs font-poppins font-semibold text-black items-center">
+                SET GEOLOCATION
+              </div>
+            </button>
           </div>
         </div>
       </div>
       <div className="flex pl-60 w-full h-full">
         {category === "inventory" && <Inventory></Inventory>}
+        {category === "menu" && <Menu></Menu>}
+        {category === "location" && <Location></Location>}
       </div>
     </div>
   );

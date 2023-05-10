@@ -1,17 +1,22 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "./Menu.css";
 import {
   Box,
   Card,
   CircularProgress,
   Divider,
+  FormControl,
+  InputAdornment,
   InputBase,
+  InputLabel,
   LinearProgress,
   Modal,
+  OutlinedInput,
   TextField,
   ToggleButton,
   ToggleButtonGroup,
 } from "@mui/material";
+import DoDisturbOnIcon from "@mui/icons-material/DoDisturbOn";
 import AddIcon from "@mui/icons-material/Add";
 import SearchIcon from "@mui/icons-material/Search";
 import { Ingredient } from "../../interface/ingredient";
@@ -19,6 +24,8 @@ import axios from "axios";
 import { BACKEND_URL } from "../../constants/backendurl";
 import { MenuItems } from "../../interface/menuitem";
 import AutorenewIcon from "@mui/icons-material/Autorenew";
+import AddCircleIcon from "@mui/icons-material/AddCircle";
+import { Recipe } from "../../interface/recipe";
 
 const updateitemmodalstyle = {
   position: "absolute" as "absolute",
@@ -50,6 +57,9 @@ const addinventoryitemmodalstyle = {
 
 const Menu = () => {
   const [isLoading, setIsLoading] = useState(false);
+  const [recipes, setRecipes] = useState<Recipe[]>([]);
+  const [recipesearchString, setRecipeSearchString] = useState("");
+
   const [addRecipe, setIsAddRecipe] = useState(false);
 
   const [errorResponse, setErrorResponse] = useState(true);
@@ -89,6 +99,28 @@ const Menu = () => {
   const [imageIsLoading, setImageIsLoading] = useState(false);
   const [imageDescription, setImageDescription] = useState("");
   const [catalogImageUrl, setCatalogImageUrl] = useState("");
+
+  const [catalogGenerationIsLoading, setCatalogGenerationIsLoading] =
+    useState(false);
+  const [catalogGenerationresult, setCatalogGenerationresult] = useState(false);
+  const [catalogvaluecheck, setCatalgoValuecheck] = useState(false);
+
+  const [variations, setVariations] = useState([{ name: "", amount: "" }]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setIsLoading(true);
+      try {
+        const response = await axios.get(`${BACKEND_URL}menu/recipes`);
+        setRecipes(response.data);
+        setIsLoading(false);
+      } catch (err) {
+        console.log(err);
+        setIsLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
 
   const handleAddQuantity = (
     id: any,
@@ -152,6 +184,28 @@ const Menu = () => {
     }
   };
 
+  const fetchImage = async () => {
+    try {
+      const response = await axios.post(`${BACKEND_URL}menu/images`, {
+        dishName: recipename,
+      });
+      if (response.status === 200) {
+        setCatalogImageUrl(response.data);
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const fetchRecipeData = async () => {
+    try {
+      const response = await axios.get(`${BACKEND_URL}menu/recipes`);
+      setRecipes(response.data);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
   const getMenuItems = () => {
     if (ingredientGenerationStatus) {
       setStepNumber(2);
@@ -167,6 +221,7 @@ const Menu = () => {
             console.log(response.data);
             setIngredients(response.data);
             fetchinventory();
+            fetchImage();
             setIngredientGenerationStatus(true);
             setIngredientIsLoading(false);
           }
@@ -221,6 +276,7 @@ const Menu = () => {
       (ingredient) => ingredient.id !== upid
     );
     setIngredients(filteredIngredients);
+    setUpdateItemResponse(true);
     setUpResponse("Ingredient removed successfully");
     setUpdateItemIsLoading(false);
   };
@@ -229,21 +285,7 @@ const Menu = () => {
     setStepNumber(3);
     setImageIsLoading(true);
     setImageDescription(recipename);
-    const fetchImage = async () => {
-      try {
-        const response = await axios.post(`${BACKEND_URL}menu/images`, {
-          dishName: recipename,
-        });
-        if (response.status === 200) {
-          setCatalogImageUrl(response.data);
-          setImageIsLoading(false);
-        }
-      } catch (err) {
-        console.log(err);
-        setImageIsLoading(false);
-      }
-    };
-    fetchImage();
+    setImageIsLoading(false);
   };
 
   const regenerateCatalogImage = () => {
@@ -275,9 +317,72 @@ const Menu = () => {
     setStepNumber(0);
     setIsAddRecipe(false);
     setRecipeName("");
+    setRecipeDescription("");
     setCatalogImageUrl("");
     setIngredientGenerationStatus(false);
     setErrorResponse(false);
+    setVariations([{ name: "", amount: "" }]);
+    setCatalogGenerationresult(false);
+    setCatalgoValuecheck(false);
+  };
+
+  const addVariation = () => {
+    setStepNumber(4);
+  };
+
+  // methods for variations
+  const handleAddVariation = () => {
+    setVariations([...variations, { name: "", amount: "" }]);
+  };
+
+  const handleRemoveVariation = (index: any) => {
+    const updatedVariations = [...variations];
+    updatedVariations.splice(index, 1);
+    setVariations(updatedVariations);
+  };
+
+  const handleVariationNameChange = (index: any, value: any) => {
+    const updatedVariations = [...variations];
+    updatedVariations[index].name = value;
+    setVariations(updatedVariations);
+  };
+
+  const handleVariationPriceChange = (index: any, value: any) => {
+    const updatedVariations = [...variations];
+    updatedVariations[index].amount = value;
+    setVariations(updatedVariations);
+  };
+
+  const addItemToCatalog = async () => {
+    // Check if at least one variation has a name and price
+    const isValid = variations.some(
+      (variation) => variation.name.trim() !== "" && variation.amount !== ""
+    );
+
+    if (isValid) {
+      setCatalgoValuecheck(false);
+      // Perform catalog creation logic with variations data
+      setCatalogGenerationIsLoading(true);
+      try {
+        const response = await axios.post(`${BACKEND_URL}menu/item`, {
+          variations: variations,
+          dishName: recipename,
+          description: recipedescription,
+          imageUrl: catalogImageUrl,
+          ingredients: ingredients,
+        });
+        if (response.status === 200) {
+          fetchRecipeData();
+          setCatalogGenerationIsLoading(false);
+          setCatalogGenerationresult(true);
+        }
+      } catch (error: any) {
+        console.log(error);
+        setCatalogGenerationIsLoading(false);
+      }
+    } else {
+      setCatalgoValuecheck(true);
+    }
   };
 
   return (
@@ -292,7 +397,12 @@ const Menu = () => {
           <div className="flex pt-10 pr-10 pl-10 justify-between">
             <div className="flex pl-3 w-56 h-10 rounded border-2 border-neutral-200 items-center">
               <SearchIcon></SearchIcon>
-              <InputBase sx={{ ml: 1, flex: 1 }} placeholder="Search Recipe" />
+              <InputBase
+                sx={{ ml: 1, flex: 1 }}
+                placeholder="Search Recipes"
+                value={recipesearchString}
+                onChange={(e) => setRecipeSearchString(e.target.value)}
+              />
             </div>
             <button
               className="w-36 h-12 bg-darkgreen text-white font-poppins font-bold text-sm rounded-3xl"
@@ -300,6 +410,30 @@ const Menu = () => {
             >
               Add Recipe
             </button>
+          </div>
+          <div className="grid p-10 grid-flow-row grid-cols-4 gap-x-5 gap-y-8">
+            {recipes
+              .filter((item) =>
+                item.dishName
+                  .toLowerCase()
+                  .includes(recipesearchString.toLowerCase())
+              )
+              .map((item) => (
+                <Card
+                  key={item.id}
+                  className="grid grid-rows-6 w-48 h-60 border-2 border-darkgreen"
+                >
+                  <div
+                    className="flex row-span-5 w-full h-full menuitem"
+                    style={{
+                      backgroundImage: `url(${item.imageUrl})`,
+                    }}
+                  ></div>
+                  <div className="flex row-span-1 w-full h-full justify-center font-poppins font-semibold items-center">
+                    {item.dishName}
+                  </div>
+                </Card>
+              ))}
           </div>
         </div>
       )}
@@ -406,7 +540,7 @@ const Menu = () => {
                   <div className="flex pt-5 pl-10 font-poppins font-normal text-base">
                     Inventory List
                   </div>
-                  <div className="grid p-10 grid-flow-row grid-cols-4 gap-x-5 gap-y-8">
+                  <div className="grid p-10 grid-flow-row grid-cols-3 gap-x-5 overflow-x-hidden gap-y-8 overflow-scroll">
                     {menuItems
                       .filter((item) =>
                         item.itemName
@@ -522,13 +656,15 @@ const Menu = () => {
               Back to Recipes
             </button>
           </div>
-          <div className="flex pt-5 justify-center w-full">
-            <LinearProgress
-              color="secondary"
-              variant="determinate"
-              value={stepnumber * 20}
-            />
-          </div>
+          {!catalogGenerationresult && (
+            <div className="flex pt-5 justify-center w-full">
+              <LinearProgress
+                color="secondary"
+                variant="determinate"
+                value={stepnumber * 20}
+              />
+            </div>
+          )}
           {errorResponse && (
             <div className="flex w-full h-full pt-40 text-xl justify-center items-center text-poppins font-semibold">
               Error in adding new item. Please try again later
@@ -579,7 +715,7 @@ const Menu = () => {
                       recipename}
                   </div>
                   <div className="flex pb-5 text-xl font-poppins">
-                    This usually takes 2-3 minutes
+                    This might take upto 3 minutes
                   </div>
                   <CircularProgress sx={{ color: "#5CAC0E" }} />
                 </div>
@@ -633,7 +769,7 @@ const Menu = () => {
                       </Card>
                     ))}
                   </div>
-                  <div className="flex w-full pt-5 justify-center">
+                  <div className="flex w-full pt-5 pb-5 justify-center">
                     <button
                       className="w-32 h-12 bg-darkgreen text-white font-poppins font-bold text-sm rounded"
                       onClick={getCatalogImage}
@@ -688,10 +824,108 @@ const Menu = () => {
                     ></div>
                   </div>
                   <div className="flex w-full pb-5 pr-20 justify-end">
-                    <button className="w-32 h-12 bg-darkgreen text-white font-poppins font-bold text-sm rounded">
+                    <button
+                      className="w-32 h-12 bg-darkgreen text-white font-poppins font-bold text-sm rounded"
+                      onClick={addVariation}
+                    >
                       Add Details
                     </button>
                   </div>
+                </div>
+              )}
+            </div>
+          )}
+          {stepnumber == 4 && !errorResponse && (
+            <div className="flex flex-col w-full h-full">
+              {catalogGenerationIsLoading && !catalogGenerationresult && (
+                <div className="flex flex-col w-full h-full justify-center items-center">
+                  <div className="flex pt-32 text-xl font-poppins">
+                    {"Please wait while we create catalog for " + recipename}
+                  </div>
+                  <CircularProgress sx={{ color: "#5CAC0E" }} />
+                </div>
+              )}
+              {!catalogGenerationIsLoading && catalogGenerationresult && (
+                <div className="flex flex-col w-full h-full justify-center items-center">
+                  <div className="flex pt-32 text-xl font-poppins">
+                    {"Catalog for " + recipename + " generated successfully"}
+                  </div>
+                </div>
+              )}
+              {!catalogGenerationIsLoading && !catalogGenerationresult && (
+                <div className="flex flex-col w-full h-full pt-5">
+                  <div className="flex justify-between items-center">
+                    <div className="flex pt-8 pl-20 text-xl font-poppins font-semibold text-darkgreen">
+                      Add Variations
+                    </div>
+                    <div className="flex pr-20 pt-8">
+                      <AddCircleIcon
+                        color="secondary"
+                        fontSize="large"
+                        onClick={handleAddVariation}
+                      ></AddCircleIcon>
+                    </div>
+                  </div>
+                  <div className="grid pt-5 pl-20 pr-20 grid-flow-row w-full h-full gap-3">
+                    {variations.map((variation, index) => (
+                      <div
+                        className="grid grid-cols-3 gap-10 pl-10 pr-10 items-center"
+                        key={index}
+                      >
+                        <TextField
+                          id={`variation-name-${index}`}
+                          label="Variation name"
+                          color="secondary"
+                          value={variation.name}
+                          onChange={(e) =>
+                            handleVariationNameChange(index, e.target.value)
+                          }
+                        />
+                        <FormControl fullWidth sx={{ m: 1 }}>
+                          <InputLabel
+                            htmlFor={`variation-price-${index}`}
+                            color="secondary"
+                          >
+                            Price
+                          </InputLabel>
+                          <OutlinedInput
+                            id={`variation-price-${index}`}
+                            type="number"
+                            color="secondary"
+                            value={variation.amount}
+                            onChange={(e) =>
+                              handleVariationPriceChange(index, e.target.value)
+                            }
+                            startAdornment={
+                              <InputAdornment position="start">
+                                $
+                              </InputAdornment>
+                            }
+                            label="Price"
+                          />
+                        </FormControl>
+                        {index > 0 && (
+                          <DoDisturbOnIcon
+                            color="secondary"
+                            onClick={() => handleRemoveVariation(index)}
+                          />
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex w-full pt-5 pb-5 pr-20 justify-end">
+                    <button
+                      className="w-32 h-12 bg-darkgreen text-white font-poppins font-bold text-sm rounded"
+                      onClick={addItemToCatalog}
+                    >
+                      Create Catalog
+                    </button>
+                  </div>
+                  {catalogvaluecheck && (
+                    <div className="flex pt-5 justify-center text-xl font-poppins text-red-500 font-semibold">
+                      Please add variation
+                    </div>
+                  )}
                 </div>
               )}
             </div>

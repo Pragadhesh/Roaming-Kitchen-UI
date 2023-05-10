@@ -18,7 +18,7 @@ import {
   ToggleButton,
   ToggleButtonGroup,
 } from "@mui/material";
-import { MenuItems } from "../../interface/menuitem";
+import { FoodDish, MenuItems } from "../../interface/menuitem";
 
 const additemmodalstyle = {
   position: "absolute" as "absolute",
@@ -81,18 +81,23 @@ const Inventory = () => {
   const [upitemunit, setupitemunit] = useState("");
   const [upitemAmount, setupItemAmount] = useState("");
   const [upimageurl, setupimageurl] = useState("");
+  const [upItemFooddish, setUpItemFooddish] = useState<FoodDish[]>([]);
+
   const handleupdateItemOpen = (
     id: any,
     name: any,
     unit: any,
     amount: any,
-    imageurl: any
+    imageurl: any,
+    fooddish: any
   ) => {
+    setCategory("item");
     setupid(id);
     setupItemName(name);
     setupitemunit(unit);
     setupItemAmount(amount);
     setupimageurl(imageurl);
+    setUpItemFooddish(fooddish);
     setUpdateItemModal(true);
   };
   const handleupdateItemClose = () => {
@@ -303,61 +308,22 @@ const Inventory = () => {
                   )}
                   {category === "recipes" && (
                     <div className="grid pt-5 grid-cols-3 gap-5 grid-flow-row overflow-auto">
-                      <Card className="grid grid-rows-6 w-48 h-60 border-2 border-darkgreen">
-                        <div
-                          className="flex row-span-5 w-full h-full menuitem"
-                          /*style={{
-                  backgroundImage: `url(${upbgimage})`,
-                }}*/
-                        ></div>
-                        <div className="flex row-span-1 w-full h-full justify-center font-poppins font-semibold items-center">
-                          Mutton
-                        </div>
-                      </Card>
-                      <Card className="grid grid-rows-6 w-48 h-60 border-2 border-darkgreen">
-                        <div
-                          className="flex row-span-5 w-full h-full menuitem"
-                          /*style={{
-                  backgroundImage: `url(${upbgimage})`,
-                }}*/
-                        ></div>
-                        <div className="flex row-span-1 w-full h-full justify-center font-poppins font-semibold items-center">
-                          Mutton
-                        </div>
-                      </Card>
-                      <Card className="grid grid-rows-6 w-48 h-60 border-2 border-darkgreen">
-                        <div
-                          className="flex row-span-5 w-full h-full menuitem"
-                          /*style={{
-                  backgroundImage: `url(${upbgimage})`,
-                }}*/
-                        ></div>
-                        <div className="flex row-span-1 w-full h-full justify-center font-poppins font-semibold items-center">
-                          Mutton
-                        </div>
-                      </Card>
-                      <Card className="grid grid-rows-6 w-48 h-60 border-2 border-darkgreen">
-                        <div
-                          className="flex row-span-5 w-full h-full menuitem"
-                          /*style={{
-                  backgroundImage: `url(${upbgimage})`,
-                }}*/
-                        ></div>
-                        <div className="flex row-span-1 w-full h-full justify-center font-poppins font-semibold items-center">
-                          Mutton
-                        </div>
-                      </Card>
-                      <Card className="grid grid-rows-6 w-48 h-60 border-2 border-darkgreen">
-                        <div
-                          className="flex row-span-5 w-full h-full menuitem"
-                          /*style={{
-                  backgroundImage: `url(${upbgimage})`,
-                }}*/
-                        ></div>
-                        <div className="flex row-span-1 w-full h-full justify-center font-poppins font-semibold items-center">
-                          Mutton
-                        </div>
-                      </Card>
+                      {upItemFooddish.map((recipe) => (
+                        <Card
+                          key={recipe.id}
+                          className="grid grid-rows-6 w-48 h-60 border-2 border-darkgreen"
+                        >
+                          <div
+                            className="flex row-span-5 w-full h-full menuitem"
+                            style={{
+                              backgroundImage: `url(${recipe.imageUrl})`,
+                            }}
+                          ></div>
+                          <div className="flex row-span-1 w-full h-full justify-center font-poppins font-semibold items-center">
+                            {recipe.dishName}
+                          </div>
+                        </Card>
+                      ))}
                     </div>
                   )}
                 </div>
@@ -511,7 +477,8 @@ const Inventory = () => {
                       item.itemName,
                       item.unit,
                       item.amount,
-                      item.imageUrl
+                      item.imageUrl,
+                      item.foodDishes
                     )
                   }
                 >

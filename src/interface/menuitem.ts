@@ -6,6 +6,7 @@ export interface MenuItems {
   unit: string;
   foodDishes: FoodDish[];
   low: boolean;
+  recipeLock: boolean;
 }
 
 export interface FoodDish {

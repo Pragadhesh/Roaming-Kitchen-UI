@@ -39,8 +39,8 @@ const updateitemmodalstyle = {
   top: "50%",
   left: "50%",
   transform: "translate(-50%, -50%)",
-  width: 850,
-  height: 500,
+  width: 900,
+  height: 550,
   bgcolor: "background.paper",
   border: "2px solid #5CAC0E",
   boxShadow: 24,
@@ -81,6 +81,8 @@ const Inventory = () => {
   const [upitemunit, setupitemunit] = useState("");
   const [upitemAmount, setupItemAmount] = useState("");
   const [upimageurl, setupimageurl] = useState("");
+  const [upRecipeLock, setUpRecipeLock] = useState(false);
+
   const [upItemFooddish, setUpItemFooddish] = useState<FoodDish[]>([]);
 
   const handleupdateItemOpen = (
@@ -89,7 +91,8 @@ const Inventory = () => {
     unit: any,
     amount: any,
     imageurl: any,
-    fooddish: any
+    fooddish: any,
+    recipeLock: any
   ) => {
     setCategory("item");
     setupid(id);
@@ -97,6 +100,7 @@ const Inventory = () => {
     setupitemunit(unit);
     setupItemAmount(amount);
     setupimageurl(imageurl);
+    setUpRecipeLock(recipeLock);
     setUpItemFooddish(fooddish);
     setUpdateItemModal(true);
   };
@@ -114,6 +118,17 @@ const Inventory = () => {
   ) => {
     console.log(category);
     setCategory(newCategory);
+  };
+
+  const handlerecipeLockChange = (
+    event: React.MouseEvent<HTMLElement>,
+    newCategory: string
+  ) => {
+    if (newCategory === "on") {
+      setUpRecipeLock(true);
+    } else {
+      setUpRecipeLock(false);
+    }
   };
 
   const [addItemUnit, setAddItemUnit] = React.useState("PIECE");
@@ -255,25 +270,25 @@ const Inventory = () => {
                             backgroundImage: `url(${upimageurl})`,
                           }}
                         ></div>
-                        <div className="grid grid-rows-3 w-full p-5">
+                        <div className="grid grid-rows-3 w-full pl-5">
                           <div className="flex flex-col w-full h-full">
-                            <div className="flex text-lg font-poppins font-normal">
+                            <div className="flex text-xl font-poppins font-semibold">
                               Item Name
                             </div>
-                            <div className="flex  pt-3 text-darkgreen text-2xl font-poppins font-semibold">
+                            <div className="flex  pt-3 text-darkgreen text-lg font-poppins">
                               {upitemName}
                             </div>
                           </div>
                           <div className="flex flex-col w-full h-full">
-                            <div className="flex text-lg font-poppins font-normal">
+                            <div className="flex text-xl font-poppins font-semibold">
                               Unit
                             </div>
-                            <div className="flex  pt-3 text-darkgreen text-2xl font-poppins font-semibold">
+                            <div className="flex  pt-3 text-darkgreen text-lg font-poppins">
                               {upitemunit}
                             </div>
                           </div>
                           <div>
-                            <div className="flex text-lg font-poppins font-normal">
+                            <div className="flex text-xl font-poppins font-semibold">
                               Amount
                             </div>
                             <TextField
@@ -287,6 +302,44 @@ const Inventory = () => {
                                 setupItemAmount(event.target.value)
                               }
                             />
+                          </div>
+                          <div>
+                            <div className="flex text-xl font-poppins font-semibold pb-2">
+                              Recipe lock
+                            </div>
+                            <ToggleButtonGroup
+                              color="primary"
+                              exclusive
+                              aria-label="Platform"
+                              onChange={handlerecipeLockChange}
+                            >
+                              <ToggleButton
+                                value="on"
+                                style={
+                                  upRecipeLock
+                                    ? {
+                                        backgroundColor: "#5CAC0E",
+                                        color: "white",
+                                      }
+                                    : {}
+                                }
+                              >
+                                ON
+                              </ToggleButton>
+                              <ToggleButton
+                                value="off"
+                                style={
+                                  !upRecipeLock
+                                    ? {
+                                        backgroundColor: "#5CAC0E",
+                                        color: "white",
+                                      }
+                                    : {}
+                                }
+                              >
+                                OFF
+                              </ToggleButton>
+                            </ToggleButtonGroup>
                           </div>
                         </div>
                       </div>
@@ -469,7 +522,7 @@ const Inventory = () => {
                 <Card
                   key={item.id}
                   className={`grid grid-rows-6 w-48 h-60 border-2 ${
-                    item.low ? "border-red-500" : "border-darkgreen"
+                    item.recipeLock ? "border-red-500" : "border-darkgreen"
                   }`}
                   onClick={() =>
                     handleupdateItemOpen(
@@ -478,7 +531,8 @@ const Inventory = () => {
                       item.unit,
                       item.amount,
                       item.imageUrl,
-                      item.foodDishes
+                      item.foodDishes,
+                      item.recipeLock
                     )
                   }
                 >

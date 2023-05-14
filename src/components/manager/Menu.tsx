@@ -26,6 +26,7 @@ import { MenuItems } from "../../interface/menuitem";
 import AutorenewIcon from "@mui/icons-material/Autorenew";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import { Recipe } from "../../interface/recipe";
+import { useNavigate } from "react-router-dom";
 
 const updateitemmodalstyle = {
   position: "absolute" as "absolute",
@@ -106,6 +107,8 @@ const Menu = () => {
   const [catalogvaluecheck, setCatalgoValuecheck] = useState(false);
 
   const [variations, setVariations] = useState([{ name: "", amount: "" }]);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -385,6 +388,16 @@ const Menu = () => {
     }
   };
 
+  function openUpdateRecipe(catalogid: any) {
+    const path = "/manager/recipes/" + catalogid;
+    console.log(path);
+    navigate(path, {
+      state: {
+        catalogid: catalogid,
+      },
+    });
+  }
+
   return (
     <>
       {isLoading && (
@@ -422,6 +435,7 @@ const Menu = () => {
                 <Card
                   key={item.id}
                   className="grid grid-rows-6 w-48 h-60 border-2 border-darkgreen"
+                  onClick={() => openUpdateRecipe(item.catalogid)}
                 >
                   <div
                     className="flex row-span-5 w-full h-full menuitem"

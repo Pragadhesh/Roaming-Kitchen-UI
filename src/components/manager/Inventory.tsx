@@ -19,6 +19,7 @@ import {
   ToggleButtonGroup,
 } from "@mui/material";
 import { FoodDish, MenuItems } from "../../interface/menuitem";
+import { useNavigate } from "react-router-dom";
 
 const additemmodalstyle = {
   position: "absolute" as "absolute",
@@ -49,6 +50,8 @@ const updateitemmodalstyle = {
 };
 
 const Inventory = () => {
+  const navigate = useNavigate();
+
   const [menuItems, setMenuItems] = useState<MenuItems[]>([]);
 
   const [isLoading, setIsLoading] = useState(false);
@@ -116,7 +119,6 @@ const Inventory = () => {
     event: React.MouseEvent<HTMLElement>,
     newCategory: string
   ) => {
-    console.log(category);
     setCategory(newCategory);
   };
 
@@ -151,6 +153,15 @@ const Inventory = () => {
     fetchData();
   }, []);
 
+  function openUpdateRecipe(catalogid: any) {
+    const path = "/manager/recipes/" + catalogid;
+    navigate(path, {
+      state: {
+        catalogid: catalogid,
+      },
+    });
+  }
+
   const addItemToInventory = async () => {
     setAddItemIsLoading(true);
     try {
@@ -178,6 +189,7 @@ const Inventory = () => {
         itemName: upitemName,
         unit: upitemunit,
         amount: upitemAmount.toString(),
+        recipeLock: upRecipeLock,
       });
       if (response.status === 200) {
         setMenuItems(response.data);
@@ -365,6 +377,7 @@ const Inventory = () => {
                         <Card
                           key={recipe.id}
                           className="grid grid-rows-6 w-48 h-60 border-2 border-darkgreen"
+                          onClick={() => openUpdateRecipe(recipe.catalogid)}
                         >
                           <div
                             className="flex row-span-5 w-full h-full menuitem"

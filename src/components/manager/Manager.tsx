@@ -33,7 +33,7 @@ const Manager = () => {
         <div className="flex flex-col w-full h-full">
           <div className="flex  pt-5 w-full">
             <div className="flex logo"></div>
-            <div className="flex pl-2 font-medium font-poppins self-end text-sm">
+            <div className="flex pl-2 font-semibold text-darkgreen font-poppins self-end text-sm">
               THE ROAMING KITCHEN
             </div>
           </div>

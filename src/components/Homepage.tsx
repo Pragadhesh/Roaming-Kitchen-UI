@@ -35,7 +35,7 @@ function Homepage() {
       <div className="flex top-5  w-full items-center justify-between absolute">
         <div className="flex pl-10">
           <div className="flex logo"></div>
-          <div className="flex pl-2 font-medium font-poppins self-end text-lg">
+          <div className="flex pl-2 font-semibold text-darkgreen font-poppins self-end text-lg">
             THE ROAMING KITCHEN
           </div>
         </div>

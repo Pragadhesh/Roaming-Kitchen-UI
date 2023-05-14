@@ -154,10 +154,12 @@ const Inventory = () => {
   }, []);
 
   function openUpdateRecipe(catalogid: any) {
+    const randomNumber = Math.floor(Math.random() * 100) + 1;
     const path = "/manager/recipes/" + catalogid;
     navigate(path, {
       state: {
         catalogid: catalogid,
+        key: randomNumber,
       },
     });
   }

@@ -16,6 +16,8 @@ const Recipedetails = () => {
   const cid = location.state ? location.state.catalogid : null;
   const [catalogid, setCatalogid] = useState(cid);
 
+  const key = location.state.key;
+
   const [isLoading, setIsLoading] = useState(false);
   const [response, setResponse] = useState(true);
   const [responsemsg, setResponsemsg] = useState("");
@@ -26,23 +28,19 @@ const Recipedetails = () => {
   const [availability, setAvailability] = useState(false);
 
   useEffect(() => {
+    setResponse(false);
+    setIsLoading(true);
     if (cid === null) {
       setResponse(true);
       setResponsemsg("Error in fetching recipe details");
       setIsLoading(false);
     } else {
       const fetchData = async () => {
-        setIsLoading(true);
         try {
-          console.log(catalogid);
           const response = await axios.get(
             `${BACKEND_URL}menu/recipes/${catalogid}`
           );
           setRecipeDetails(response.data);
-          if (recipedetails) {
-            setAvailability(recipedetails?.availability);
-            setDishName(recipedetails?.foodDish.dishName);
-          }
           setResponse(false);
           setIsLoading(false);
         } catch (err) {
@@ -56,6 +54,13 @@ const Recipedetails = () => {
     }
   }, []);
 
+  useEffect(() => {
+    if (recipedetails) {
+      setAvailability(recipedetails.availability);
+      setDishName(recipedetails.foodDish.dishName);
+    }
+  }, [recipedetails]);
+
   const handlerecipeLockChange = (
     event: React.MouseEvent<HTMLElement>,
     newCategory: string
@@ -64,6 +69,48 @@ const Recipedetails = () => {
       setAvailability(true);
     } else {
       setAvailability(false);
+    }
+  };
+
+  const updateRecipeDetails = async () => {
+    setResponse(false);
+    setIsLoading(true);
+    if (recipedetails) {
+      const hasRecipeLock = recipedetails.menuitems.some(
+        (item) => item.recipeLock === true
+      );
+      if (hasRecipeLock) {
+        setResponsemsg(
+          "One of the Ingredient is locked.Unable to update the recipe"
+        );
+        setResponse(true);
+        setIsLoading(false);
+      } else if (availability === recipedetails.availability) {
+        setResponsemsg("Item updated successfully");
+        setResponse(true);
+        setIsLoading(false);
+      } else {
+        try {
+          const response = await axios.post(`${BACKEND_URL}menu/recipes`, {
+            catalogid: recipedetails.foodDish.catalogid,
+            availability: availability,
+          });
+          if (response.status === 200) {
+            setResponsemsg("Item updated successfully");
+            setResponse(true);
+            setIsLoading(false);
+          }
+        } catch (err) {
+          setResponsemsg("Error in updating the item");
+          setResponse(true);
+          setIsLoading(false);
+          console.log(err);
+        }
+      }
+    } else {
+      setResponsemsg("Error in updating the item");
+      setResponse(true);
+      setIsLoading(false);
     }
   };
 
@@ -161,7 +208,10 @@ const Recipedetails = () => {
               </div>
             </div>
             <div className="flex w-full h-full pb-5">
-              <button className="w-32 h-12 bg-darkgreen text-white font-poppins font-bold text-sm rounded">
+              <button
+                className="w-32 h-12 bg-darkgreen text-white font-poppins font-bold text-sm rounded"
+                onClick={updateRecipeDetails}
+              >
                 Update Item
               </button>
             </div>
@@ -170,7 +220,7 @@ const Recipedetails = () => {
       )}
       {isLoading && !response && (
         <div className="flex w-full h-full justify-center items-center">
-          <CircularProgress color="secondary" />
+          <CircularProgress sx={{ color: "#5CAC0E" }} />
         </div>
       )}
       {!isLoading && response && (

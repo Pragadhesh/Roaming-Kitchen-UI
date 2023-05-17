@@ -6,6 +6,7 @@ import MapContainer from "../maps/Customermap";
 import { boolean } from "square/dist/types/schema";
 import { useDispatch } from "react-redux";
 import { updateCustomerLocation } from "../../redux/slices/customerSlice";
+import { Link, useNavigate } from "react-router-dom";
 
 interface Locationdata {
   id: number;
@@ -15,6 +16,7 @@ interface Locationdata {
 
 const Customer = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
   const [locdata, setLocdata] = useState<Locationdata>();
 
@@ -100,6 +102,7 @@ const Customer = () => {
           customerlongitude: customerLocation?.longitude,
         })
       );
+      navigate("/customer/home");
     } else {
       setDeliveryStatus(false);
       setDeliveryFailure(true);

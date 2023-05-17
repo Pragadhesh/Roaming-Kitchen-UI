@@ -4,7 +4,7 @@ import LocalMallIcon from "@mui/icons-material/LocalMall";
 import { Theme, useTheme } from "@mui/material/styles";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
-import { Item, ItemVariation } from "../../interface/orderitem";
+import { CartItem, Item, ItemVariation } from "../../interface/orderitem";
 
 import {
   Box,
@@ -66,12 +66,17 @@ const OrderMenu = () => {
   const [addItemVariations, setAddItemVariations] = useState<ItemVariation[]>(
     []
   );
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [quantity, setQuantity] = useState(0);
+  const [addItemResponse, setAddItemResponse] = useState(false);
 
   const handleaddItemClose = () => {
     setitemType("");
     setAddItemName("");
     setAddItemImageUrl("");
     setAddItemVariations([]);
+    setQuantity(0);
+    setAddItemResponse(false);
     setAddItemModal(false);
   };
 
@@ -83,12 +88,45 @@ const OrderMenu = () => {
     setAddItemName(name);
     setAddItemImageUrl(image);
     setAddItemVariations(variations);
+    setQuantity(1);
     setitemType(variations[0].item_variation_data.name);
     setAddItemModal(true);
   };
 
-  const imageUrl =
-    "https://square-catalog-sandbox.s3.amazonaws.com/files/c419890039984c733872ff90bc5f710cab1dbcc3/original.jpeg";
+  const AddItemToCart = (itemType: any) => {
+    const matchedVariation = addItemVariations.find(
+      (variation) => variation.item_variation_data.name === itemType
+    );
+
+    if (matchedVariation) {
+      const cartItem: CartItem = {
+        id: matchedVariation.item_variation_data.item_id,
+        name: addItemName,
+        imageUrl: addItemImageUrl,
+        variation: matchedVariation,
+        quantity: quantity,
+        amount: getItemPrice(itemType),
+      };
+      setCartItems((prevCartItems) => [...prevCartItems, cartItem]);
+      setAddItemResponse(true);
+    } else {
+      console.log("No matching variation found for itemType:", itemType);
+    }
+  };
+
+  useEffect(() => {
+    console.log(cartItems);
+  }, [cartItems]);
+
+  const getItemPrice = (itemType: any) => {
+    const selectedItem = addItemVariations.find(
+      (variation) => variation.item_variation_data.name === itemType
+    );
+    if (selectedItem) {
+      return selectedItem.item_variation_data.price_money.amount / 100;
+    }
+    return 0;
+  };
 
   const [itemType, setitemType] = React.useState<string>();
   const handleChange = (event: SelectChangeEvent<typeof itemType>) => {
@@ -98,13 +136,12 @@ const OrderMenu = () => {
     setitemType(value);
   };
 
-  const [quantity, setQuantity] = useState(0);
   const handleIncrement = () => {
     setQuantity(quantity + 1);
   };
 
   const handleDecrement = () => {
-    if (quantity > 0) {
+    if (quantity > 1) {
       setQuantity(quantity - 1);
     }
   };
@@ -352,98 +389,110 @@ const OrderMenu = () => {
           <div className="flex w-full justify-end">
             <Modal open={addItemModal} onClose={handleaddItemClose}>
               <Box sx={addItemModalstyle}>
-                <div className="grid grid-cols-2 w-full h-full">
-                  <div
-                    className="flex w-full h-full menuitem rounded"
-                    style={{
-                      backgroundImage: `url(${addItemImageUrl})`,
-                    }}
-                  ></div>
-                  <div className="flex flex-col w-full h-full p-3 justify-center">
-                    <div className="flex pb-5 w-full font-poppins text-xl text-darkgreen font-semibold">
-                      {addItemName}
-                    </div>
-                    <FormControl sx={{ m: 1, width: 250 }} color="secondary">
-                      <InputLabel id="demo-multiple-name-label">
-                        Type
-                      </InputLabel>
-                      <Select
-                        labelId="demo-multiple-name-label"
-                        id="demo-multiple-name"
-                        value={itemType}
-                        onChange={handleChange}
-                        input={<OutlinedInput label="Name" />}
-                        MenuProps={MenuProps}
-                      >
-                        {addItemVariations.map((variation) => (
-                          <MenuItem
-                            key={variation.id}
-                            value={variation.item_variation_data.name}
-                            style={getStyles(
-                              variation.item_variation_data.name,
-                              itemType,
-                              theme
-                            )}
+                {!addItemResponse && (
+                  <div className="grid grid-cols-2 w-full h-full">
+                    <div
+                      className="flex w-full h-full menuitem rounded"
+                      style={{
+                        backgroundImage: `url(${addItemImageUrl})`,
+                      }}
+                    ></div>
+                    <div className="flex flex-col w-full h-full p-3 justify-center">
+                      <div className="flex pb-5 w-full font-poppins text-xl text-darkgreen font-semibold">
+                        {addItemName}
+                      </div>
+                      <FormControl sx={{ m: 1, width: 250 }} color="secondary">
+                        <InputLabel id="demo-multiple-name-label">
+                          Type
+                        </InputLabel>
+                        <Select
+                          labelId="demo-multiple-name-label"
+                          id="demo-multiple-name"
+                          value={itemType}
+                          onChange={handleChange}
+                          input={<OutlinedInput label="Name" />}
+                          MenuProps={MenuProps}
+                        >
+                          {addItemVariations.map((variation) => (
+                            <MenuItem
+                              key={variation.id}
+                              value={variation.item_variation_data.name}
+                              style={getStyles(
+                                variation.item_variation_data.name,
+                                itemType,
+                                theme
+                              )}
+                            >
+                              {variation.item_variation_data.name}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                      <div className="flex pt-5 pr-5 justify-between">
+                        <div className="flex w-full font-poppins text-xl text-darkgreen font-semibold  pr-5 pl-3">
+                          Quantity
+                        </div>
+                        <div className="flex flex-row">
+                          <button
+                            className="flex items-center"
+                            onClick={handleDecrement}
                           >
-                            {variation.item_variation_data.name}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
-                    <div className="flex pt-5 pr-5 justify-between">
-                      <div className="flex w-full font-poppins text-xl text-darkgreen font-semibold  pr-5 pl-3">
-                        Quantity
+                            <RemoveIcon color="secondary" fontSize="medium" />
+                          </button>
+                          <span className="flex pl-1 pr-1 text-2xl text-darkgreen ">
+                            {quantity}
+                          </span>
+                          <button
+                            onClick={handleIncrement}
+                            className="flex items-center"
+                          >
+                            <AddIcon color="secondary" fontSize="medium" />
+                          </button>
+                        </div>
                       </div>
-                      <div className="flex flex-row">
+                      <div className="flex pt-5 pr-5 justify-between">
+                        <div className="flex w-full font-poppins text-xl text-darkgreen font-semibold  pr-5 pl-3">
+                          Price
+                        </div>
+                        <div className="flex text-xl font-semibold text-darkgreen">
+                          {"$" + quantity * getItemPrice(itemType)}
+                        </div>
+                      </div>
+                      <div className="flex w-full justify-end pt-7">
                         <button
-                          className="flex items-center"
-                          onClick={handleDecrement}
+                          className="w-28 h-12 bg-darkgreen text-white font-poppins font-bold text-sm rounded"
+                          onClick={() => AddItemToCart(itemType)}
                         >
-                          <RemoveIcon color="secondary" fontSize="medium" />
-                        </button>
-                        <span className="flex pl-1 pr-1 text-2xl text-darkgreen ">
-                          {quantity}
-                        </span>
-                        <button
-                          onClick={handleIncrement}
-                          className="flex items-center"
-                        >
-                          <AddIcon color="secondary" fontSize="medium" />
+                          Add Item
                         </button>
                       </div>
-                    </div>
-                    <div className="flex pt-5 pr-5 justify-between">
-                      <div className="flex w-full font-poppins text-xl text-darkgreen font-semibold  pr-5 pl-3">
-                        Price
-                      </div>
-                      <div className="flex text-xl font-semibold text-darkgreen">
-                        120
-                      </div>
-                    </div>
-                    <div className="flex w-full justify-end pt-7">
-                      <button className="w-28 h-12 bg-darkgreen text-white font-poppins font-bold text-sm rounded">
-                        Add Item
-                      </button>
                     </div>
                   </div>
-                </div>
+                )}
+                {addItemResponse && (
+                  <div className="flex w-full h-full  text-xl items-center justify-center font-poppins font-semibold text-darkgreen">
+                    Item Added successfully
+                  </div>
+                )}
               </Box>
             </Modal>
-            <div className="flex pr-10 pt-4">
-              <div className="relative">
-                <div
-                  className="absolute bg-darkgreen rounded-full w-5 h-5 flex items-center justify-center"
-                  style={{ zIndex: 1, top: "-10px", right: "-12px" }}
-                >
-                  <div className="text-white font-semibold text-sm justify-center items-center">
-                    4
+            {cartItems.length > 0 && (
+              <div className="flex pr-10 pt-4">
+                <div className="relative">
+                  <div
+                    className="absolute bg-darkgreen rounded-full w-5 h-5 flex items-center justify-center"
+                    style={{ zIndex: 1, top: "-10px", right: "-12px" }}
+                  >
+                    <div className="text-white font-semibold text-sm justify-center items-center">
+                      {cartItems.length}
+                    </div>
                   </div>
+                  <LocalMallIcon fontSize="large" color="secondary" />
                 </div>
-                <LocalMallIcon fontSize="large" color="secondary" />
               </div>
-            </div>
+            )}
           </div>
-          <div className="grid grid-cols-3 gap-y-5 justify-center pl-48 pr-48">
+          <div className="grid grid-cols-3 gap-y-5 justify-center pl-48 pr-48 pt-5">
             {items.map((recipe) => (
               <div className="flex justify-center" key={recipe.id}>
                 <div

@@ -20,4 +20,13 @@ export interface Item {
     imageUrl: string;
     variations: ItemVariation[];
   }
+
+export interface CartItem {
+    id: string;
+    name: string;
+    imageUrl: string;
+    variation: ItemVariation;
+    quantity: number;
+    amount: number
+}
   

@@ -67,10 +67,11 @@ const OrderMenu = () => {
     []
   );
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
-  const [cartInfo, setCartInfo] = useState(true);
+  const [cartInfo, setCartInfo] = useState(false);
 
   const [quantity, setQuantity] = useState(0);
   const [addItemResponse, setAddItemResponse] = useState(false);
+  const [total, setTotal] = useState<number>(0);
 
   const imageur =
     "https://square-catalog-sandbox.s3.amazonaws.com/files/48044db73303c8e88722aec8dd4e97d932242461/original.jpeg";
@@ -98,21 +99,44 @@ const OrderMenu = () => {
     setAddItemModal(true);
   };
 
+  const handleOpenCart = () => {
+    setCartInfo(true);
+  };
+
+  const handleCloseCart = () => {
+    setCartInfo(false);
+  };
+
   const AddItemToCart = (itemType: any) => {
     const matchedVariation = addItemVariations.find(
       (variation) => variation.item_variation_data.name === itemType
     );
 
     if (matchedVariation) {
-      const cartItem: CartItem = {
-        id: matchedVariation.item_variation_data.item_id,
-        name: addItemName,
-        imageUrl: addItemImageUrl,
-        variation: matchedVariation,
-        quantity: quantity,
-        amount: getItemPrice(itemType),
-      };
-      setCartItems((prevCartItems) => [...prevCartItems, cartItem]);
+      const existingCartItem = cartItems.find(
+        (item) => item.id === matchedVariation.id
+      );
+
+      if (existingCartItem) {
+        setCartItems((prevCartItems) =>
+          prevCartItems.map((item) =>
+            item.id === existingCartItem.id
+              ? { ...item, quantity: item.quantity + quantity }
+              : item
+          )
+        );
+      } else {
+        const cartItem: CartItem = {
+          id: matchedVariation.id,
+          name: addItemName,
+          imageUrl: addItemImageUrl,
+          variation: matchedVariation,
+          quantity: quantity,
+          amount: getItemPrice(itemType),
+        };
+        setCartItems((prevCartItems) => [...prevCartItems, cartItem]);
+      }
+
       setAddItemResponse(true);
     } else {
       console.log("No matching variation found for itemType:", itemType);
@@ -150,6 +174,39 @@ const OrderMenu = () => {
       setQuantity(quantity - 1);
     }
   };
+
+  const handleCartItemIncrement = (itemId: string) => {
+    setCartItems((prevItems) =>
+      prevItems.map((item) =>
+        item.id === itemId ? { ...item, quantity: item.quantity + 1 } : item
+      )
+    );
+  };
+
+  const handleCartItemDecrement = (itemId: string) => {
+    setCartItems((prevItems) =>
+      prevItems
+        .map((item) =>
+          item.id === itemId ? { ...item, quantity: item.quantity - 1 } : item
+        )
+        .filter((item) => item.quantity !== 0)
+    );
+  };
+
+  useEffect(() => {
+    if (cartItems.length === 0) {
+      setCartInfo(false);
+    }
+    const calculateTotal = () => {
+      let sum = 0;
+      cartItems.forEach((item) => {
+        sum +=
+          item.variation.item_variation_data.price_money.amount * item.quantity;
+      });
+      setTotal(sum / 100);
+    };
+    calculateTotal();
+  }, [cartItems]);
 
   useEffect(() => {
     const result = [
@@ -484,7 +541,7 @@ const OrderMenu = () => {
               </Box>
             </Modal>
             {cartItems.length > 0 && (
-              <div className="flex pr-10 pt-4">
+              <div className="flex pr-10 pt-4" onClick={handleOpenCart}>
                 <div className="relative">
                   <div
                     className="absolute bg-darkgreen rounded-full w-5 h-5 flex items-center justify-center"
@@ -534,7 +591,10 @@ const OrderMenu = () => {
         <div className="flex flex-col w-full h-full">
           <div className="flex w-full justify-end">
             <div className="flex pr-10 pt-4">
-              <div className="flex flex-row items-center">
+              <div
+                className="flex flex-row items-center"
+                onClick={handleCloseCart}
+              >
                 <MenuBookIcon fontSize="large" color="secondary" />
                 <div className="flex pl-3 font-poppins text-darkgreen">
                   Back to Menu
@@ -548,48 +608,58 @@ const OrderMenu = () => {
             </div>
           </div>
           <div className="flex w-full">
-            <div className="grid  grid-flow-row w-full justify-items-center gap-5">
-              <div className="flex h-24 w-full justify-center">
-                <div className="grid grid-cols-10 w-96 h-full rounded">
-                  <div className="flex items-center justify-center h-full col-span-3">
-                    <div
-                      className="flex h-full w-3/5 rounded menuitem "
-                      style={{
-                        backgroundImage: `url(${imageur})`,
-                      }}
-                    ></div>
-                  </div>
-                  <div className="flex col-span-7 items-center w-full h-full">
-                    <div className="grid grid-rows-4 w-full h-full">
-                      <div className="flex text-sm text-gray-500 font-poppins font-semibold">
-                        Watermelon juice
-                      </div>
-                      <div className="flex text-sm text-darkgreen font-poppins font-semibold">
-                        $20
-                      </div>
-                      <div className="row-span-2 w-20 items-center grid grid-cols-3 flex-row rounded-sm">
-                        <Card
-                          className="flex w-6 h-6 items-center justify-center"
-                          onClick={handleDecrement}
-                        >
-                          <RemoveIcon fontSize="small" />
-                        </Card>
-                        <span className="flex justify-center text-gray-500 font-semibold items-center">
-                          {quantity}
-                        </span>
-                        <Card
-                          onClick={handleIncrement}
-                          className="flex w-6 h-6 items-center justify-center"
-                        >
-                          <AddIcon fontSize="small" />
-                        </Card>
+            <div className="grid grid-flow-row w-full justify-items-center gap-5">
+              {cartItems.map((item) => (
+                <div key={item.id} className="flex h-24 w-full justify-center">
+                  <div className="grid grid-cols-10 w-96 h-full rounded">
+                    <div className="flex items-center justify-center h-full col-span-3">
+                      <div
+                        className="flex h-full w-3/5 rounded menuitem"
+                        style={{
+                          backgroundImage: `url(${item.imageUrl})`,
+                        }}
+                      ></div>
+                    </div>
+                    <div className="flex col-span-7 items-center w-full h-full">
+                      <div className="grid grid-rows-5 w-full h-full">
+                        <div className="flex text-sm text-gray-500 font-poppins font-semibold">
+                          {item.name}
+                        </div>
+                        <div className="flex text-xs text-zinc-400 font-poppins font-semibold">
+                          {item.variation.item_variation_data.name}
+                        </div>
+                        <div className="flex text-sm text-darkgreen font-poppins font-semibold">
+                          $
+                          {(item.variation.item_variation_data.price_money
+                            .amount *
+                            item.quantity) /
+                            100}
+                        </div>
+                        <div className="row-span-2 w-20 items-center grid grid-cols-3 flex-row rounded-sm">
+                          <Card
+                            className="flex w-6 h-6 items-center justify-center"
+                            onClick={() => handleCartItemDecrement(item.id)}
+                          >
+                            <RemoveIcon fontSize="small" />
+                          </Card>
+                          <span className="flex justify-center text-gray-500 font-semibold items-center">
+                            {item.quantity}
+                          </span>
+                          <Card
+                            onClick={() => handleCartItemIncrement(item.id)}
+                            className="flex w-6 h-6 items-center justify-center"
+                          >
+                            <AddIcon fontSize="small" />
+                          </Card>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
+              ))}
             </div>
           </div>
+
           <div className="flex flex-col w-full pt-5 pb-5 items-center">
             <hr className="w-96 border border-gray-300 mb-5" />
             <div className="flex w-96 justify-between">
@@ -597,7 +667,7 @@ const OrderMenu = () => {
                 Total
               </div>
               <div className="flex  text-xl font-poppins font-semibold text-gray-500">
-                $300
+                {"$" + total}
               </div>
             </div>
             <div className="flex w-96 justify-end pt-5">

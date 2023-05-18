@@ -4,6 +4,7 @@ import LocalMallIcon from "@mui/icons-material/LocalMall";
 import { Theme, useTheme } from "@mui/material/styles";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
+import MenuBookIcon from "@mui/icons-material/MenuBook";
 import { CartItem, Item, ItemVariation } from "../../interface/orderitem";
 
 import {
@@ -56,10 +57,9 @@ function getStyles(name: string, itemType: string | undefined, theme: Theme) {
 const OrderMenu = () => {
   const theme = useTheme();
   const [isLoading, setIsLoading] = useState(false);
-
   const [items, setItems] = useState<Item[]>([]);
 
-  const [addItemModal, setAddItemModal] = useState(true);
+  const [addItemModal, setAddItemModal] = useState(false);
 
   const [addItemName, setAddItemName] = useState("");
   const [addItemImageUrl, setAddItemImageUrl] = useState("");
@@ -67,8 +67,13 @@ const OrderMenu = () => {
     []
   );
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [cartInfo, setCartInfo] = useState(true);
+
   const [quantity, setQuantity] = useState(0);
   const [addItemResponse, setAddItemResponse] = useState(false);
+
+  const imageur =
+    "https://square-catalog-sandbox.s3.amazonaws.com/files/48044db73303c8e88722aec8dd4e97d932242461/original.jpeg";
 
   const handleaddItemClose = () => {
     setitemType("");
@@ -376,15 +381,17 @@ const OrderMenu = () => {
             THE ROAMING KITCHEN
           </div>
         </div>
-        <div className="flex pr-5 pt-3">
-          <Link to="/customer">
-            <button className="w-36 h-12 bg-darkgreen text-white font-poppins font-bold text-sm rounded-3xl">
-              Back
-            </button>
-          </Link>
-        </div>
+        {!cartInfo && (
+          <div className="flex pr-5 pt-3">
+            <Link to="/customer">
+              <button className="w-36 h-12 bg-darkgreen text-white font-poppins font-bold text-sm rounded-3xl">
+                Back
+              </button>
+            </Link>
+          </div>
+        )}
       </div>
-      {!isLoading && (
+      {!isLoading && !cartInfo && (
         <div>
           <div className="flex w-full justify-end">
             <Modal open={addItemModal} onClose={handleaddItemClose}>
@@ -432,22 +439,22 @@ const OrderMenu = () => {
                         <div className="flex w-full font-poppins text-xl text-darkgreen font-semibold  pr-5 pl-3">
                           Quantity
                         </div>
-                        <div className="flex flex-row">
-                          <button
-                            className="flex items-center"
+                        <div className="w-32 items-center grid grid-cols-3 flex-row rounded-sm">
+                          <Card
+                            className="flex w-6 h-6 items-center justify-center"
                             onClick={handleDecrement}
                           >
-                            <RemoveIcon color="secondary" fontSize="medium" />
-                          </button>
-                          <span className="flex pl-1 pr-1 text-2xl text-darkgreen ">
+                            <RemoveIcon fontSize="small" color="secondary" />
+                          </Card>
+                          <span className="flex justify-center items-center text-darkgreen font-semibold">
                             {quantity}
                           </span>
-                          <button
+                          <Card
                             onClick={handleIncrement}
-                            className="flex items-center"
+                            className="flex w-6 h-6 items-center justify-center"
                           >
-                            <AddIcon color="secondary" fontSize="medium" />
-                          </button>
+                            <AddIcon fontSize="small" color="secondary" />
+                          </Card>
                         </div>
                       </div>
                       <div className="flex pt-5 pr-5 justify-between">
@@ -520,6 +527,84 @@ const OrderMenu = () => {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+      {!isLoading && cartInfo && (
+        <div className="flex flex-col w-full h-full">
+          <div className="flex w-full justify-end">
+            <div className="flex pr-10 pt-4">
+              <div className="flex flex-row items-center">
+                <MenuBookIcon fontSize="large" color="secondary" />
+                <div className="flex pl-3 font-poppins text-darkgreen">
+                  Back to Menu
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="flex w-full justify-center">
+            <div className="flex w-96 justify-start pb-5 text-xl font-poppins font-semibold text-darkgreen">
+              Cart
+            </div>
+          </div>
+          <div className="flex w-full">
+            <div className="grid  grid-flow-row w-full justify-items-center gap-5">
+              <div className="flex h-24 w-full justify-center">
+                <div className="grid grid-cols-10 w-96 h-full rounded">
+                  <div className="flex items-center justify-center h-full col-span-3">
+                    <div
+                      className="flex h-full w-3/5 rounded menuitem "
+                      style={{
+                        backgroundImage: `url(${imageur})`,
+                      }}
+                    ></div>
+                  </div>
+                  <div className="flex col-span-7 items-center w-full h-full">
+                    <div className="grid grid-rows-4 w-full h-full">
+                      <div className="flex text-sm text-gray-500 font-poppins font-semibold">
+                        Watermelon juice
+                      </div>
+                      <div className="flex text-sm text-darkgreen font-poppins font-semibold">
+                        $20
+                      </div>
+                      <div className="row-span-2 w-20 items-center grid grid-cols-3 flex-row rounded-sm">
+                        <Card
+                          className="flex w-6 h-6 items-center justify-center"
+                          onClick={handleDecrement}
+                        >
+                          <RemoveIcon fontSize="small" />
+                        </Card>
+                        <span className="flex justify-center text-gray-500 font-semibold items-center">
+                          {quantity}
+                        </span>
+                        <Card
+                          onClick={handleIncrement}
+                          className="flex w-6 h-6 items-center justify-center"
+                        >
+                          <AddIcon fontSize="small" />
+                        </Card>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="flex flex-col w-full pt-5 pb-5 items-center">
+            <hr className="w-96 border border-gray-300 mb-5" />
+            <div className="flex w-96 justify-between">
+              <div className="flex  text-xl font-poppins font-semibold text-darkgreen">
+                Total
+              </div>
+              <div className="flex  text-xl font-poppins font-semibold text-gray-500">
+                $300
+              </div>
+            </div>
+            <div className="flex w-96 justify-end pt-5">
+              <button className="w-28 h-10 bg-darkgreen text-white font-poppins font-semibold  text-sm rounded">
+                Checkout
+              </button>
+            </div>
           </div>
         </div>
       )}

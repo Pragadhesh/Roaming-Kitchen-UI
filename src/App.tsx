@@ -5,6 +5,7 @@ import Manager from "./components/manager/Manager";
 import Customer from "./components/customer/Customer";
 import Recipedetails from "./components/manager/Recipedetails";
 import OrderMenu from "./components/customer/OrderMenu";
+import Details from "./components/customer/Details";
 
 const App = () => {
   return (
@@ -15,6 +16,7 @@ const App = () => {
       <Route path="/manager/recipes/:catalogid" element={<Recipedetails />} />
       <Route path="/customer" element={<Customer />} />
       <Route path="/customer/home" element={<OrderMenu />} />
+      <Route path="/customer/details" element={<Details />} />
     </Routes>
   );
 };

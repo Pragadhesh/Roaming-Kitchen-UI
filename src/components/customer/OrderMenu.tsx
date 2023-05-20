@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import LocalMallIcon from "@mui/icons-material/LocalMall";
 import { Theme, useTheme } from "@mui/material/styles";
 import AddIcon from "@mui/icons-material/Add";
@@ -9,7 +9,9 @@ import { CartItem, Item, ItemVariation } from "../../interface/orderitem";
 
 import {
   Box,
+  Button,
   Card,
+  CircularProgress,
   FormControl,
   InputLabel,
   MenuItem,
@@ -18,6 +20,8 @@ import {
   Select,
   SelectChangeEvent,
 } from "@mui/material";
+import { useDispatch } from "react-redux";
+import { updateCustomerCart } from "../../redux/slices/customerSlice";
 
 const addItemModalstyle = {
   position: "absolute" as "absolute",
@@ -56,6 +60,8 @@ function getStyles(name: string, itemType: string | undefined, theme: Theme) {
 
 const OrderMenu = () => {
   const theme = useTheme();
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [items, setItems] = useState<Item[]>([]);
 
@@ -143,10 +149,6 @@ const OrderMenu = () => {
     }
   };
 
-  useEffect(() => {
-    console.log(cartItems);
-  }, [cartItems]);
-
   const getItemPrice = (itemType: any) => {
     const selectedItem = addItemVariations.find(
       (variation) => variation.item_variation_data.name === itemType
@@ -191,6 +193,11 @@ const OrderMenu = () => {
         )
         .filter((item) => item.quantity !== 0)
     );
+  };
+
+  const handleCheckout = () => {
+    dispatch(updateCustomerCart({ cartitems: cartItems }));
+    navigate("/customer/details");
   };
 
   useEffect(() => {
@@ -448,6 +455,11 @@ const OrderMenu = () => {
           </div>
         )}
       </div>
+      {isLoading && (
+        <div className="flex w-full h-full justify-center items-center">
+          <CircularProgress sx={{ color: "#5CAC0E" }} />
+        </div>
+      )}
       {!isLoading && !cartInfo && (
         <div>
           <div className="flex w-full justify-end">
@@ -591,7 +603,7 @@ const OrderMenu = () => {
         <div className="flex flex-col w-full h-full">
           <div className="flex w-full justify-end">
             <div className="flex pr-10 pt-4">
-              <div
+              <Button
                 className="flex flex-row items-center"
                 onClick={handleCloseCart}
               >
@@ -599,7 +611,7 @@ const OrderMenu = () => {
                 <div className="flex pl-3 font-poppins text-darkgreen">
                   Back to Menu
                 </div>
-              </div>
+              </Button>
             </div>
           </div>
           <div className="flex w-full justify-center">
@@ -671,7 +683,10 @@ const OrderMenu = () => {
               </div>
             </div>
             <div className="flex w-96 justify-end pt-5">
-              <button className="w-28 h-10 bg-darkgreen text-white font-poppins font-semibold  text-sm rounded">
+              <button
+                className="w-28 h-10 bg-darkgreen text-white font-poppins font-semibold  text-sm rounded"
+                onClick={handleCheckout}
+              >
                 Checkout
               </button>
             </div>

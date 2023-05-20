@@ -12,6 +12,8 @@ import Inventory from "./Inventory";
 import Menu from "./Menu";
 import Location from "./Location";
 import Directions from "./Directions";
+import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
+import { Link } from "react-router-dom";
 
 const Manager = () => {
   const dispatch = useDispatch();
@@ -68,7 +70,7 @@ const Manager = () => {
             >
               <RestaurantMenuOutlinedIcon></RestaurantMenuOutlinedIcon>
               <div className="flex pl-3 text-xs font-poppins font-semibold text-black items-center">
-                AVAILABLE MENU
+                MENU
               </div>
             </button>
             <button
@@ -96,6 +98,14 @@ const Manager = () => {
               </div>
             </button>
           </div>
+          <Link to="/">
+            <div className="flex w-full pt-12 pl-3 pr-3 items-center">
+              <button className="flex h-11 w-full justify-center items-center bg-darkgreen text-white font-poppins font-semibold  text-sm rounded">
+                <ArrowBackIosIcon></ArrowBackIosIcon>
+                <div className="flex items-center">Back to Home</div>
+              </button>
+            </div>
+          </Link>
         </div>
       </div>
       <div className="flex pl-60 w-full h-full">

@@ -29,4 +29,3 @@ export interface CartItem {
     quantity: number;
     amount: number
 }
-  

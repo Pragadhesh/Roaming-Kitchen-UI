@@ -832,7 +832,7 @@ const Menu = () => {
                   </div>
                   <div className="flex justify-center w-full h-full pt-5 pb-5 pl-20 pr-20">
                     <div
-                      className="flex w-2/3 h-72 bg-darkgreen menuitem rounded"
+                      className="flex w-1/3 h-72 bg-darkgreen menuitem rounded"
                       style={{
                         backgroundImage: `url(${catalogImageUrl})`,
                       }}

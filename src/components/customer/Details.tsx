@@ -3,6 +3,10 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import VerifiedOutlinedIcon from "@mui/icons-material/VerifiedOutlined";
 import { useSelector } from "react-redux";
+import { GoogleApiWrapper } from "google-maps-react";
+import axios from "axios";
+import { BACKEND_URL } from "../../constants/backendurl";
+import { isValidNumber } from "libphonenumber-js";
 
 const Details = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -32,6 +36,8 @@ const Details = () => {
     let isValid = true;
     let errorMsg = "";
 
+    const isValidNum = isValidNumber(phoneNumber);
+
     if (firstname.trim() === "") {
       isValid = false;
       errorMsg = "First name is required";
@@ -44,9 +50,10 @@ const Details = () => {
     } else if (phoneNumber.trim() === "") {
       isValid = false;
       errorMsg = "Phone number is required";
-    } else if (!/^\+?\d{9,16}$/.test(phoneNumber)) {
+    } else if (!isValidNum) {
       isValid = false;
-      errorMsg = "Phone number is invalid";
+      errorMsg =
+        "Please enter a valid phone number in the format: +1 4155552671";
     } else if (email.trim() === "") {
       isValid = false;
       errorMsg = "Email is required";
@@ -58,7 +65,25 @@ const Details = () => {
     if (isValid) {
       setError(false);
       setIsLoading(true);
-      console.log("Order placed successfully");
+      try {
+        const response = await axios.post(`${BACKEND_URL}orders`, {
+          firstname: firstname,
+          lastname: lastname,
+          email: email,
+          address: address,
+          phone: phoneNumber,
+          customerlatitude: customerlatitude,
+          customerlongitude: customerlongitude,
+          cartitems: cartitems,
+        });
+        if (response.status === 200) {
+          setResponse(true);
+          setIsLoading(false);
+        }
+      } catch (error: any) {
+        console.log(error);
+        setIsLoading(false);
+      }
     } else {
       setError(true);
       setErrormsg(errorMsg);
@@ -66,9 +91,21 @@ const Details = () => {
   };
 
   useEffect(() => {
-    console.log(customerlatitude);
-    console.log(customerlongitude);
-    console.log(cartitems);
+    const geocoder = new google.maps.Geocoder();
+
+    const fetchAddress = () => {
+      const latlng = { lat: customerlatitude, lng: customerlongitude };
+
+      geocoder.geocode({ location: latlng }, (results, status) => {
+        if (status === "OK" && results.length > 0) {
+          setAddress(results[0].formatted_address);
+        }
+      });
+    };
+
+    if (customerlatitude !== 0 && customerlongitude !== 0) {
+      fetchAddress();
+    }
   }, []);
 
   return (
@@ -200,4 +237,6 @@ const Details = () => {
   );
 };
 
-export default Details;
+export default GoogleApiWrapper({
+  apiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY || "",
+})(Details);

@@ -6,6 +6,7 @@ import MapContainer from "../maps/Customermap";
 import { boolean } from "square/dist/types/schema";
 import { useDispatch } from "react-redux";
 import { updateCustomerLocation } from "../../redux/slices/customerSlice";
+import HomeIcon from "@mui/icons-material/Home";
 import { Link, useNavigate } from "react-router-dom";
 
 interface Locationdata {
@@ -114,6 +115,11 @@ const Customer = () => {
       {!isLoading && (
         <>
           <div className="flex w-full h-full justify-between pt-5 pl-10 pr-10">
+            <Link to="/">
+              <div className="flex h-full pr-5">
+                <HomeIcon fontSize="large" color="secondary"></HomeIcon>
+              </div>
+            </Link>
             <div className="flex w-full h-full text-2xl font-poppins font-semibold text-darkgreen">
               Select Your Location
             </div>

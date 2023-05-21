@@ -509,8 +509,8 @@ const Inventory = () => {
           </Modal>
 
           <div className="flex pt-10 pr-10 pl-10 justify-between">
-            <div className="flex pl-3 w-56 h-10 rounded border-2 border-neutral-200 items-center">
-              <SearchIcon></SearchIcon>
+            <div className="flex pl-3 w-60 h-10 rounded border-2 border-limegreen items-center">
+              <SearchIcon color="secondary"></SearchIcon>
               <InputBase
                 sx={{ ml: 1, flex: 1 }}
                 placeholder="Search Inventory"
@@ -524,9 +524,6 @@ const Inventory = () => {
             >
               Add Item
             </button>
-          </div>
-          <div className="flex pt-5 pl-10 font-poppins font-normal text-base">
-            Inventory List
           </div>
           <div className="grid p-10 grid-flow-row grid-cols-4 gap-x-5 gap-y-8">
             {menuItems

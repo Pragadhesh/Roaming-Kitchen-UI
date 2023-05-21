@@ -14,6 +14,7 @@ import Location from "./Location";
 import Directions from "./Directions";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import { Link } from "react-router-dom";
+import AvailableMenu from "./AvailableMenu";
 
 const Manager = () => {
   const dispatch = useDispatch();
@@ -113,6 +114,7 @@ const Manager = () => {
         {category === "menu" && <Menu></Menu>}
         {category === "location" && <Location></Location>}
         {category === "orders" && <Directions></Directions>}
+        {category === "products" && <AvailableMenu></AvailableMenu>}
       </div>
     </div>
   );

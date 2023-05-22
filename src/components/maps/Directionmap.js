@@ -2,17 +2,17 @@ import React, { Component } from 'react';
 import { Map, GoogleApiWrapper, Marker } from 'google-maps-react';
 
 class MyContainer extends Component {
+  
   constructor(props) {
     super(props);
     this.state = {
       directions: null,
-      storeLocation: { lat: 37.7749, lng: -122.4194 },
-      customerLocation: { lat: 37.7666, lng: -122.42729 },
+      storeLocation: { lat: props.storeLatitude, lng: props.storeLongitude },
+      customerLocation: { lat: props.customerLatitude, lng: props.customerLongitude },
       distance: null,
       duration: null
     };
     this.map = null;
-    
   }
 
   componentDidMount() {
@@ -56,14 +56,16 @@ class MyContainer extends Component {
 
   render() {
     const mapStyles = {
-      width: '80%',
+      width: '100%',
       height: '90%',
-      borderRadius: '10px'
+      borderRadius: '10px',
+      position: 'relative',
+      overflow: 'hidden'
     };
 
     return (
-      <div>
-      <div style={{ textAlign: 'center', margin: '10px' }}>
+      <div style={{ overflow: 'hidden',position: 'relative', width: '50rem', height: '25rem'}} >
+      <div style={{ textAlign: 'start', margin: '10px' }}>
         {this.state.distance && this.state.duration ? (
           <div>
             <strong className='text-darkgreen'>Distance:</strong> {this.state.distance} | <strong className='text-darkgreen'>Duration:</strong> {this.state.duration}
@@ -74,7 +76,7 @@ class MyContainer extends Component {
       </div>
       <Map
         google={this.props.google}
-        zoom={15}
+        zoom={20}
         style={mapStyles}
         initialCenter={this.state.storeLocation}
         onReady={(_, map) => {

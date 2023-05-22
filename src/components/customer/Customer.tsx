@@ -18,7 +18,7 @@ interface Locationdata {
 const Customer = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [locdata, setLocdata] = useState<Locationdata>();
 
   const [customerLocation, setCustomerLocation] = useState<Locationdata>();

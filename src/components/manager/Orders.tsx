@@ -51,17 +51,31 @@ const Orders = () => {
           <div className="flex p-10 text-2xl font-semibold font-poppins text-darkgreen">
             Active Orders
           </div>
-          <div className="grid grid-flow-col justify-items-center gap-3 w-full">
+          <div className="grid grid-flow-row justify-items-center gap-3 w-full">
+            {orders.length === 0 && (
+              <div className="flex pt-20 font-poppins font-semibold text-darkgreen text-xl">
+                No Active Orders found
+              </div>
+            )}
             {orders.map((order) => (
               <div className="flex w-3/6 h-28 rounded">
                 <Card className="grid grid-cols-3  w-full h-full">
                   <div className="flex flex-col justify-center items-center w-full h-full">
-                    <div className="flex text-base font-semibold font-poppins text-darkgreen">
+                    <div
+                      className="flex text-base font-semibold font-poppins text-darkgreen"
+                      style={{
+                        maxWidth: "80%",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
                       {
                         order.fulfillments[0].delivery_details.recipient
                           .display_name
                       }
                     </div>
+
                     <div className="flex text-sm font-semibold font-poppins text-slate-400">
                       {
                         order.fulfillments[0].delivery_details.recipient
@@ -71,7 +85,7 @@ const Orders = () => {
                   </div>
                   <div className="flex flex-col justify-center items-center w-full h-full">
                     <div className="flex text-base font-semibold font-poppins text-darkgreen">
-                      {"$" + order.total_money.amount}
+                      {"$" + order.total_money.amount / 100}
                     </div>
                   </div>
                   <div className="flex flex-col justify-center items-center w-full h-full">

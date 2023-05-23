@@ -19,6 +19,14 @@ const Details = () => {
   const [customerlongitude, setCustomerLongitude] = useState(
     useSelector((state: any) => state.customer.customerlongitude)
   );
+
+  const [storelatitude, setStoreLatitude] = useState(
+    useSelector((state: any) => state.customer.storelatitude)
+  );
+  const [storelongitude, setStoreLongitude] = useState(
+    useSelector((state: any) => state.customer.storelongitude)
+  );
+
   const [cartitems, setCartItems] = useState(
     useSelector((state: any) => state.customer.cartitems)
   );
@@ -74,6 +82,8 @@ const Details = () => {
           phone: phoneNumber,
           customerlatitude: customerlatitude,
           customerlongitude: customerlongitude,
+          storelatitude: storelatitude,
+          storelongitude: storelongitude,
           cartitems: cartitems,
         });
         if (response.status === 200) {

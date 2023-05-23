@@ -63,11 +63,13 @@ const Inventory = () => {
   const [addItemResponse, setAddItemResponse] = useState(false);
   const [itemName, setItemName] = useState("");
   const [itemAmount, setItemAmount] = useState("");
+
   const handleaddItemOpen = () => {
     setAddItemUnit("PIECE");
     setItemAmount("30");
     setAddItemModal(true);
   };
+
   const handleaddItemClose = () => {
     setItemName("");
     setAddItemIsLoading(false);

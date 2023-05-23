@@ -8,6 +8,8 @@ import { useSelector } from "react-redux";
 import VerifiedOutlinedIcon from "@mui/icons-material/VerifiedOutlined";
 import MapContainer from "../maps/Directionmap";
 import { Order } from "../../interface/activeorders";
+import { BACKEND_URL } from "../../constants/backendurl";
+import axios from "axios";
 
 const OrderDetails = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -26,14 +28,56 @@ const OrderDetails = () => {
     useSelector((state: any) => state.manager.order)
   );
 
+  const [catalogIds, setCatalogIds] = useState<String[]>([]);
+
+  const [imageUrls, setImageUrls] = useState<String[]>([]);
+
+  const updateDelivery = async () => {
+    setIsLoading(true);
+    try {
+      const response = await axios.post(`${BACKEND_URL}updatedelivery`, {
+        orderid: orderdetails.id,
+      });
+      if (response.status === 200) {
+        setResponse(true);
+        setIsLoading(false);
+      }
+    } catch (error: any) {
+      console.log(error);
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (orderdetails) {
+      setIsLoading(true);
       setOrderStatus(true);
+      setCatalogIds(orderdetails.line_items.map((item) => item.name));
     } else {
-      // The orderdetails variable is null
-      // Perform alternative actions or logic here
+      setOrderStatus(false);
     }
-  }, []);
+  }, [orderdetails]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        if (catalogIds.length > 0) {
+          console.log(catalogIds);
+          const response = await axios.post(
+            `${BACKEND_URL}imagedetails`,
+            catalogIds
+          );
+          setImageUrls(response.data);
+        }
+        setIsLoading(false);
+      } catch (err) {
+        console.log(err);
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [catalogIds]);
 
   return (
     <div className="flex flex-col w-full h-full overflow-hidden">
@@ -51,7 +95,7 @@ const OrderDetails = () => {
         </div>
       )}
       {!isLoading && response && (
-        <div className="flex flex-col w-full h-full justify-center items-center">
+        <div className="flex flex-col w-full h-full justify-center items-center pt-48">
           <div className="flex pb-3">
             <VerifiedOutlinedIcon
               style={{ fontSize: "75px", width: "75px", height: "75px" }}
@@ -98,10 +142,16 @@ const OrderDetails = () => {
           {category === "address" && (
             <div className="flex pl-5 pr-5 pt-5 w-full h-full overflow-hidden">
               <MapContainer
-                storeLatitude={37.7749}
-                storeLongitude={-122.4194}
-                customerLatitude={parseFloat(orderdetails.metadata.latitude)}
-                customerLongitude={parseFloat(orderdetails.metadata.longitude)}
+                storeLatitude={parseFloat(orderdetails.metadata.storelatitude)}
+                storeLongitude={parseFloat(
+                  orderdetails.metadata.storelongitude
+                )}
+                customerLatitude={parseFloat(
+                  orderdetails.metadata.customerlatitude
+                )}
+                customerLongitude={parseFloat(
+                  orderdetails.metadata.customerlongitude
+                )}
               />
               <div className="flex flex-col p-10 w-full h-full justify-start overflow-hidden">
                 <div className="flex text-2xl font-poppins text-darkgreen font-semibold">
@@ -140,9 +190,75 @@ const OrderDetails = () => {
                   }
                 </div>
                 <div className="flex pt-7">
-                  <button className="w-36 h-10 bg-darkgreen text-white font-poppins font-bold text-xs rounded">
+                  <button
+                    className="w-36 h-10 bg-darkgreen text-white font-poppins font-bold text-xs rounded"
+                    onClick={updateDelivery}
+                  >
                     Complete Delivery
                   </button>
+                </div>
+              </div>
+            </div>
+          )}
+          {category === "details" && (
+            <div className="flex flex-col w-full h-full">
+              <div className="flex w-full justify-center">
+                <div className="flex w-96 justify-start pb-5 text-xl font-poppins font-semibold text-darkgreen">
+                  Items
+                </div>
+              </div>
+              <div className="flex w-full">
+                <div className="grid grid-flow-row w-full justify-items-center gap-5">
+                  {orderdetails.line_items.map((lineitem, index) => (
+                    <div
+                      key={lineitem.uid}
+                      className="flex h-24 w-full justify-center"
+                    >
+                      <div className="grid grid-cols-10 w-96 h-full rounded">
+                        <div className="flex items-center justify-center h-full col-span-3">
+                          <div
+                            className="flex h-full w-3/5 rounded menuitem"
+                            style={{
+                              backgroundImage: `url(${imageUrls[index]})`,
+                            }}
+                          ></div>
+                        </div>
+                        <div className="flex col-span-7 items-center w-full h-full">
+                          <div className="grid grid-rows-5 w-full h-full">
+                            <div className="flex text-sm text-gray-500 font-poppins font-semibold">
+                              {lineitem.name}
+                            </div>
+                            <div className="flex text-xs text-zinc-400 font-poppins font-semibold">
+                              {lineitem.variation_name}
+                            </div>
+                            <div className="flex w-full">
+                              <div className="flex text-emerald-700 text-xs font-semibold font-poppins">
+                                Quantity :
+                              </div>
+                              <div className="flex pl-1 text-emerald-700 text-xs font-semibold font-poppins">
+                                {lineitem.quantity}
+                              </div>
+                            </div>
+                            <div className="flex text-sm text-darkgreen font-poppins font-semibold">
+                              ${lineitem.total_money.amount / 100}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex flex-col w-full pt-5 pb-5 items-center">
+                <hr className="w-96 border border-gray-300 mb-5" />
+                <div className="flex w-96 justify-between">
+                  <div className="flex  text-xl font-poppins font-semibold text-darkgreen">
+                    Total
+                  </div>
+                  <div className="flex  text-xl font-poppins font-semibold text-gray-500">
+                    {"$" + orderdetails.total_money.amount / 100}
+                  </div>
                 </div>
               </div>
             </div>

@@ -29,7 +29,7 @@ class MapContainer extends Component {
     return (
       <Map
         google={this.props.google}
-        zoom={18}
+        zoom={16}
         style={mapStyles}
         initialCenter={this.state.fenceCenter}
         onClick={(mapProps, map, e) => this.handleMapClick(mapProps, map, e)}

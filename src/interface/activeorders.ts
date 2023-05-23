@@ -20,8 +20,10 @@ export interface Order {
     };
     tenders: Tender[];
     metadata: {
-      latitude: string;
-      longitude: string;
+      customerlatitude: string;
+      customerlongitude: string;
+      storelatitude: string;
+      storelongitude: string;
     };
     created_at: string;
     updated_at: string;
